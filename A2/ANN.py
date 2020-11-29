@@ -11,9 +11,9 @@ import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 """
 
-training_size = 4000
+training_size = 3000
 def get_data():
-    X, Y = lp.preprocess()
+    X, Y = lp.extract_features_labels()
     tr_X = X[:training_size]
     tr_Y = Y[:training_size]
     te_X = X[training_size:]
@@ -21,8 +21,22 @@ def get_data():
 
     return tr_X, tr_Y, te_X, te_Y
 
+def get_data_import(X,Y):
+    tr_X = X[:training_size]
+    tr_Y = Y[:training_size]
+    te_X = X[training_size:]
+    te_Y = Y[training_size:]
+
+    return tr_X, tr_Y, te_X, te_Y
 # loading in the data
-tr_X, tr_Y, te_X, te_Y= get_data()
+
+
+X = np.loadtxt('features.txt')
+X = X.reshape(X.shape[0], X.shape[1] // 2, 2)
+y = np.loadtxt('labels.txt')
+tr_X, tr_Y, te_X, te_Y= get_data_import(X,y)
+
+#tr_X, tr_Y, te_X, te_Y= get_data()
 
 # normalize the inputs from 0-255 to between 0 and 1 by dividing by 255
 
@@ -74,8 +88,8 @@ model.add(BatchNormalization())
 model.add(Dense(class_num))  #Final layer has same number of neurons as classes
 model.add(Activation('softmax'))
 
-epochs = 40
-batch_size = 100
+epochs = 80
+batch_size = 64
 optimizer = 'adam'
 
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])

@@ -5,6 +5,7 @@ from tensorflow.keras.layers import Dense, Dropout, Flatten, BatchNormalization,
 from keras.constraints import maxnorm
 from keras.utils import np_utils
 import landmark_predictor as lp
+from tensorflow.keras.callbacks import EarlyStopping
 
 """
 import os
@@ -75,10 +76,11 @@ model.add(Dense(class_num))  #Final layer has same number of neurons as classes
 model.add(Activation('softmax'))
 
 epochs = 40
-batch_size = 100
+batch_size = 10
 optimizer = 'adam'
 
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+#es_callback = EarlyStopping(monitor='val_loss', patience=5)
 
 model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
 

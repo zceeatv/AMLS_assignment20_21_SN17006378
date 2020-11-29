@@ -5,6 +5,7 @@ from tensorflow.keras.layers import Dense, Dropout, Flatten, BatchNormalization,
 from keras.constraints import maxnorm
 from keras.utils import np_utils
 import landmark_predictor as lp
+from tensorflow.keras.callbacks import EarlyStopping
 
 """
 import os
@@ -13,7 +14,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 training_size = 3000
 def get_data():
-    X, Y = lp.extract_features_labels()
+    X, Y = lp.extract_mouths()
     tr_X = X[:training_size]
     tr_Y = Y[:training_size]
     te_X = X[training_size:]
@@ -79,22 +80,23 @@ model.add(Activation('relu'))
 model.add(Dropout(0.2))
 model.add(BatchNormalization())
 
-"""
+
 model.add(Dense(64, kernel_constraint=maxnorm(3)))
 model.add(Activation('relu'))
 model.add(Dropout(0.2))
 model.add(BatchNormalization())
-"""
+
 model.add(Dense(class_num))  #Final layer has same number of neurons as classes
 model.add(Activation('softmax'))
 
-epochs = 80
-batch_size = 64
+epochs = 40
+batch_size = 10
 optimizer = 'adam'
 
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+es_callback = EarlyStopping(monitor='val_loss', patience=5)
 
-model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
+model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size , callbacks=[es_callback])
 
 # Model evaluation
 scores = model.evaluate(te_X, te_Y, verbose=0)

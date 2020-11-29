@@ -139,13 +139,14 @@ def run_dlib_shape(image):
     #roi = dlibout[dlibout[48][0]:dlibout[54][0], dlibout[57][1]:dlibout[51][1]]
     return gray, resized_image
 
-def extract_mouths():
+def get_mouths():
     """
     This funtion extracts the landmarks features for all images in the folder 'dataset/celeba'.
     It also extracts the gender label for each image.
     :return:
         landmark_features:  an array containing 68 landmark points for each image in which a face was detected
-        gender_labels:     dw which a face was detected
+        gender_labels:      an array containing the gender label (male=0 and female=1) for each image in
+                            which a face was detected
     """
     image_paths = [os.path.join(images_dir, l) for l in os.listdir(images_dir)]
     target_size = None

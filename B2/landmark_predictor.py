@@ -18,21 +18,11 @@ detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
 
 
-# how to find frontal human faces in an image using 68 landmarks.  These are points on the face such as the corners of the mouth, along the eyebrows, on the eyes, and so forth.
-
-# The face detector we use is made using the classic Histogram of Oriented
-# Gradients (HOG) feature combined with a linear classifier, an image pyramid,
-# and sliding window detection scheme.  The pose estimator was created by
-# using dlib's implementation of the paper:
-# One Millisecond Face Alignment with an Ensemble of Regression Trees by
-# Vahid Kazemi and Josephine Sullivan, CVPR 2014
-# and was trained on the iBUG 300-W face landmark dataset (see https://ibug.doc.ic.ac.uk/resources/facial-point-annotations/):
-#     C. Sagonas, E. Antonakos, G, Tzimiropoulos, S. Zafeiriou, M. Pantic.
-#     300 faces In-the-wild challenge: Database and results.
-#     Image and Vision Computing (IMAVIS), Special Issue on Facial Landmark Localisation "In-The-Wild". 2016.
-
-
 def shape_to_np(shape, dtype="int"):
+    """
+    Takes the facial landmarks created from the dlib functions and creates a reshaped numpy array
+    :return: numpy array with shape (68,2)
+    """
     # initialize the list of (x, y)-coordinates
     coords = np.zeros((shape.num_parts, 2), dtype=dtype)
 
@@ -44,10 +34,12 @@ def shape_to_np(shape, dtype="int"):
     # return the list of (x, y)-coordinates
     return coords
 
+
 def rect_to_bb(rect):
-    # take a bounding predicted by dlib and convert it
-    # to the format (x, y, w, h) as we would normally do
-    # with OpenCV
+    """
+    Takes a bounding predicted by dlib and convert it to the format (x, y, w, h) used with OpenCV
+    :return: A list of x, y, w, h values
+    """
     x = rect.left()
     y = rect.top()
     w = rect.right() - x
@@ -56,11 +48,16 @@ def rect_to_bb(rect):
     # return a tuple of (x, y, w, h)
     return (x, y, w, h)
 
+
 def get_features(image):
-    # in this function we load the image, detect the landmarks of the face, and then return the image and the landmarks
+    """
+    This function loads the image, detects the landmarks of the face
+    :return:
+        dlibout:  an array containing 68 landmark points
+        resized_image: an array containing processed images
+    """
     # load the input image, resize it, and convert it to grayscale
     resized_image = image.astype('float32')
-
 
     # detect faces in the grayscale image
     rects = detector(resized_image, 1)
@@ -91,10 +88,15 @@ def get_features(image):
 
     return dlibout, resized_image
 
-def run_dlib_shape(image):
-    # in this function we load the image, detect the landmarks of the face, and then return the image and the landmarks
+
+def crop_eye(image, testing):
+    """
+    This function loads the image, detects the landmarks of the face, and crops the eye for each image
+    :return:
+        dlibout:  an array cropped eyes for each face
+        resized_image: an array containing processed images
+    """
     # load the input image, resize it, and convert it to grayscale
-    resized_image = image.astype('uint8')
     resized_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     resized_image = resized_image.astype('uint8')
@@ -130,150 +132,79 @@ def run_dlib_shape(image):
         # print(np.amin(mouth, axis=0)[0])
         corners = np.array([[np.amin(eyes, axis=0)[0], np.amin(eyes, axis=0)[1]], [np.amax(eyes, axis=0)[0], np.amax(eyes, axis=0)[1]]])
         eyes = resized_image[corners[0][1]-5:corners[1][1]+5, corners[0][0]-5:corners[1][0]]
-
         eyes = cv2.resize(eyes, (50, 30), interpolation=cv2.INTER_AREA)
-        temp = eyes.reshape(50*30,3)
-        count = 0
-        colour = temp[500]
-        for pixel in temp:
-            if np.array_equal(pixel,colour):
-                count += 1
-        if count > 1200:
-            return None,resized_image
-    return eyes, resized_image
+        if not testing:
+            exclude = identify_sunglasses(eyes)
+            if exclude:
+                return None, resized_image
+            else:
+                return eyes, resized_image
+        else:
+            return eyes, resized_image
 
 
-def extract_eyes():
+def identify_sunglasses(eyes):
+    reshape = eyes.reshape(50*30, 3)
+    count = 0
+    colour = reshape[500]
+    for pixel in reshape:
+        if np.array_equal(pixel, colour):
+            count += 1
+    if count > 1200:
+        return True
+    else:
+        return False
+
+
+def extract_eyes(testing):
     """
-    This funtion extracts the landmarks features for all images in the folder 'dataset/celeba'.
-    It also extracts the gender label for each image.
+    This funtion crops the eyes for all images in the folder 'dataset/cartoon_set'.
+    It also extracts the eye colour label for each image.
     :return:
-        landmark_features:  an array containing 68 landmark points for each image in which a face was detected
-        gender_labels:     dw which a face was detected
+        eyes:  an array of cropped eye images
+        eye_colours:     an array containing the eye colour labels
     """
+    print("Begin extracting eyes from faces")
     image_paths = [os.path.join(images_dir, l) for l in os.listdir(images_dir)]
     target_size = None
 
-    column = [0, 1]
+    column = [0, 1]     # Takes the columns from the labels file that correspond to the index and the eye colour label
     df = pd.read_csv(labels_filename, delimiter="\t", usecols=column)
     eye_colours = {}
-    for index, row in df.iterrows():
-        eye_colours[str(index)] = (row['eye_color'])
-    print("done")
+    for index, row in df.iterrows():    # Goes through each row and extracts the index and the eye colour label
+        eye_colours[str(index)] = (row['eye_color'])    # Creates a dictionary entry with key = index and item= eye colour label
+
     if os.path.isdir(images_dir):
         all_features = []
         all_labels = []
         count = 0
         error = []
         for img_path in image_paths:
-            file_name=img_path.split('\\')[-1].split('.')[0]
+            file_name = img_path.split('\\')[-1].split('.')[0]     # Get's the number for each image from the file path
 
             # load image
             img = image.img_to_array(
                 image.load_img(img_path,
                                target_size=target_size,
                                interpolation='bicubic'))
-            features, _ = run_dlib_shape(img)
+            features, _ = crop_eye(img, testing)
+            count += 1
+            if (count == 1000):
+                break
+
             if features is not None:
-                count += 1
                 all_features.append(features)
                 all_labels.append(eye_colours[file_name])
-                if(count == 10000):
-                    break
             else:
                 error.append(file_name)
 
+    print("Finished extracting eyes from faces")
+    eyes = np.array(all_features)
+    eye_colours = np.array(all_labels)
 
-    landmark_features = np.array(all_features)
+    """For Saving to text files
     arr_reshaped = landmark_features.reshape(landmark_features.shape[0], -1)
     np.savetxt("features.txt", arr_reshaped)
-
-    eye_colours = np.array(all_labels)  # simply converts the -1 into 0, so male=0 and female=1
     np.savetxt("labels.txt", eye_colours)
-    return landmark_features, eye_colours
-
-def extract_features_labels():
     """
-    This funtion extracts the landmarks features for all images in the folder 'dataset/celeba'.
-    It also extracts the gender label for each image.
-    :return:
-        landmark_features:  an array containing 68 landmark points for each image in which a face was detected
-        gender_labels:      an array containing the gender label (male=0 and female=1) for each image in
-                            which a face was detected
-    """
-    image_paths = [os.path.join(images_dir, l) for l in os.listdir(images_dir)]
-    target_size = None
-
-    column = [0, 2]
-    df = pd.read_csv(labels_filename, delimiter="\t", usecols=column)
-    face_shapes = {}
-    for index, row in df.iterrows():
-        face_shapes[str(index)] = (row['face_shape'])
-    print("done")
-    if os.path.isdir(images_dir):
-        all_features = []
-        all_labels = []
-        count = 0
-        error = []
-        for img_path in image_paths:
-            file_name=img_path.split('\\')[-1].split('.')[0]
-
-            # load image
-            img = image.img_to_array(
-                image.load_img(img_path,
-                               target_size=target_size,
-                               interpolation='bicubic'))
-            features, _ = get_features(img)
-            if features is not None:
-                count += 1
-                all_features.append(features)
-                all_labels.append(face_shapes[file_name])
-                if(count == 5000):
-                    break
-            else:
-                error.append(file_name)
-
-    landmark_features = np.array(all_features)
-    face_shapes = (np.array(all_labels) + 1)/2  # simply converts the -1 into 0, so male=0 and female=1
-
-    arr_reshaped = landmark_features.reshape(landmark_features.shape[0], -1)
-    np.savetxt("features.txt", arr_reshaped)
-    np.savetxt("labels.txt", face_shapes)
-    return landmark_features, face_shapes
-
-def preprocess():
-    image_paths = [os.path.join(images_dir, l) for l in os.listdir(images_dir)]
-    target_size = None
-
-    column = [0, 2]
-    df = pd.read_csv(labels_filename, delimiter="\t", usecols=column)
-    face_shapes = {}
-    for index, row in df.iterrows():
-        face_shapes[str(index)] = (row['face_shape'])
-    print("formatted labels")
-    if os.path.isdir(images_dir):
-        all_features = []
-        all_labels = []
-        count = 0
-        error = []
-        for img_path in image_paths:
-            file_name=img_path.split('\\')[-1].split('.')[0]
-
-            # load image
-            img = image.img_to_array(
-                image.load_img(img_path,
-                               target_size=target_size,
-                               interpolation='bicubic'))
-            resized_image = img.astype('uint8')
-
-            gray = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)
-            gray = gray.astype('uint8')
-            gray = cv2.resize(gray, (50, 50), interpolation=cv2.INTER_AREA)
-            all_features.append(gray)
-            all_labels.append(face_shapes[file_name])
-            if(count == 5000):
-                break
-    print("preprocess completed")
-    landmark_features = np.array(all_features)
-    gender_labels = (np.array(all_labels) + 1)/2  # simply converts the -1 into 0, so male=0 and female=1
-    return landmark_features, gender_labels
+    return eyes, eye_colours, error

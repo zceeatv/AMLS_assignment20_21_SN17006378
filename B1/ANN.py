@@ -1,7 +1,5 @@
-import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Flatten, BatchNormalization, Activation, MaxPooling2D, Conv2D
-#from tensorflow.keras.layers.convolutional import
 from keras.constraints import maxnorm
 from keras.utils import np_utils
 import landmark_predictor as lp
@@ -12,7 +10,9 @@ import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 """
 
-training_size = 3000
+training_size = 7000
+
+
 def get_data():
     X, Y = lp.preprocess()
     tr_X = X[:training_size]
@@ -22,6 +22,7 @@ def get_data():
 
     return tr_X, tr_Y, te_X, te_Y
 
+
 def get_data_import(X,Y):
     tr_X = X[:training_size]
     tr_Y = Y[:training_size]
@@ -29,23 +30,25 @@ def get_data_import(X,Y):
     te_Y = Y[training_size:]
 
     return tr_X, tr_Y, te_X, te_Y
-# loading in the data
+
 
 """
+# loading in the data
 X = np.loadtxt('features.txt')
 X = X.reshape(X.shape[0], X.shape[1] // 2, 2)
 y = np.loadtxt('labels.txt')
 tr_X, tr_Y, te_X, te_Y= get_data_import(X,y)
 """
 
-tr_X, tr_Y, te_X, te_Y= get_data()
+tr_X, tr_Y, te_X, te_Y = get_data()
 
 # normalize the inputs from 0-255 to between 0 and 1 by dividing by 255
-
 tr_X = tr_X.astype('float32')
 te_X = te_X.astype('float32')
 tr_X = tr_X / 255.0
 te_X = te_X / 255.0
+
+# reshape to include 1 for grayscale colours
 tr_X = tr_X.reshape(tr_X.shape[0], tr_X.shape[1], tr_X.shape[2], 1)
 te_X = te_X.reshape(te_X.shape[0], te_X.shape[1], te_X.shape[2], 1)
 
@@ -67,7 +70,6 @@ model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Dropout(0.2))
 model.add(BatchNormalization())
 
-
 model.add(Flatten())
 model.add(Dropout(0.2))
 
@@ -87,7 +89,8 @@ model.add(Activation('relu'))
 model.add(Dropout(0.2))
 model.add(BatchNormalization())
 """
-model.add(Dense(class_num))  #Final layer has same number of neurons as classes
+
+model.add(Dense(class_num))   #Final layer has same number of neurons as classes
 model.add(Activation('softmax'))
 
 epochs = 40
@@ -95,9 +98,9 @@ batch_size = 10
 optimizer = 'adam'
 
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
-es_callback = EarlyStopping(monitor='val_loss', patience=3)
-
-model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size , callbacks=[es_callback])
+#es_callback = EarlyStopping(monitor='val_loss', patience=3)
+# , callbacks=[es_callback]
+model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
 
 # Model evaluation
 scores = model.evaluate(te_X, te_Y, verbose=0)

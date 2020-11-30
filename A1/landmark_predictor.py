@@ -19,21 +19,11 @@ detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
 
 
-# how to find frontal human faces in an image using 68 landmarks.  These are points on the face such as the corners of the mouth, along the eyebrows, on the eyes, and so forth.
-
-# The face detector we use is made using the classic Histogram of Oriented
-# Gradients (HOG) feature combined with a linear classifier, an image pyramid,
-# and sliding window detection scheme.  The pose estimator was created by
-# using dlib's implementation of the paper:
-# One Millisecond Face Alignment with an Ensemble of Regression Trees by
-# Vahid Kazemi and Josephine Sullivan, CVPR 2014
-# and was trained on the iBUG 300-W face landmark dataset (see https://ibug.doc.ic.ac.uk/resources/facial-point-annotations/):
-#     C. Sagonas, E. Antonakos, G, Tzimiropoulos, S. Zafeiriou, M. Pantic.
-#     300 faces In-the-wild challenge: Database and results.
-#     Image and Vision Computing (IMAVIS), Special Issue on Facial Landmark Localisation "In-The-Wild". 2016.
-
-
 def shape_to_np(shape, dtype="int"):
+    """
+    Takes the facial landmarks created from the dlib functions and creates a reshaped numpy array
+    :return: numpy array with shape (68,2)
+    """
     # initialize the list of (x, y)-coordinates
     coords = np.zeros((shape.num_parts, 2), dtype=dtype)
 
@@ -45,10 +35,12 @@ def shape_to_np(shape, dtype="int"):
     # return the list of (x, y)-coordinates
     return coords
 
+
 def rect_to_bb(rect):
-    # take a bounding predicted by dlib and convert it
-    # to the format (x, y, w, h) as we would normally do
-    # with OpenCV
+    """
+    Takes a bounding predicted by dlib and convert it to the format (x, y, w, h) used with OpenCV
+    :return: A list of x, y, w, h values
+    """
     x = rect.left()
     y = rect.top()
     w = rect.right() - x
@@ -58,8 +50,13 @@ def rect_to_bb(rect):
     return (x, y, w, h)
 
 
-def run_dlib_shape(image):
-    # in this function we load the image, detect the landmarks of the face, and then return the image and the landmarks
+def get_features(image):  # Gets features of face
+    """
+    This function loads the image, detects the landmarks of the face
+    :return:
+        dlibout:  an array containing 68 landmark points
+        resized_image: an array containing processed images
+    """
     # load the input image, resize it, and convert it to grayscale
     resized_image = image.astype('uint8')
 
@@ -95,9 +92,10 @@ def run_dlib_shape(image):
 
     return dlibout, resized_image
 
-def extract_features_labels():
+
+def extract_features_labels():      # Gets features of all faces
     """
-    This funtion extracts the landmarks features for all images in the folder 'dataset/celeba'.
+    This function extracts the landmarks features for all images in the folder 'dataset/celeba'.
     It also extracts the gender label for each image.
     :return:
         landmark_features:  an array containing 68 landmark points for each image in which a face was detected
@@ -107,26 +105,26 @@ def extract_features_labels():
     image_paths = [os.path.join(images_dir, l) for l in os.listdir(images_dir)]
     target_size = None
 
-    column = [0, 2]
+    column = [0, 2]  # Takes the columns from the labels file that correspond to the index and the gender label
     df = pd.read_csv(labels_filename, delimiter="\t", usecols=column)
     gender_labels = {}
-    for index, row in df.iterrows():
-        gender_labels[str(index)] = (row['gender'])
-    print("done")
+    for index, row in df.iterrows():    # Goes through each row and extracts the index and the gender label
+        gender_labels[str(index)] = (row['gender'])  # Creates a dictionary entry with key = index and item= gender label
+    print("Begin extracting facial landmarks")
     if os.path.isdir(images_dir):
         all_features = []
         all_labels = []
         count = 0
         error = []
         for img_path in image_paths:
-            file_name=img_path.split('\\')[-1].split('.')[0]
+            file_name=img_path.split('\\')[-1].split('.')[0]    # Get's the number for each image from the file path
 
             # load image
             img = image.img_to_array(
                 image.load_img(img_path,
                                target_size=target_size,
                                interpolation='bicubic'))
-            features, _ = run_dlib_shape(img)
+            features, _ = get_features(img)   # Get features
             if features is not None:
                 count += 1
                 all_features.append(features)
@@ -134,29 +132,33 @@ def extract_features_labels():
                 if(count == 5000):
                     break
             else:
-                error.append(file_name)
-
+                error.append(file_name) # If the dlib facial predictor could not detect facial features, add to error list for future reference
+    print("Finished extracting facial landmarks")
     landmark_features = np.array(all_features)
     gender_labels = (np.array(all_labels) + 1)/2  # simply converts the -1 into 0, so male=0 and female=1
     return landmark_features, gender_labels
 
-def preprocess():
+
+def preprocess():   # Grayscale and Resize all images
+    """
+    This function loads all the images in the folder 'dataset/celeba'. Converts them to grayscale
+    and resizes the images to smaller sizes for faster processing of the neural network
+    :return:
+    """
     image_paths = [os.path.join(images_dir, l) for l in os.listdir(images_dir)]
     target_size = None
-
-    column = [0, 2]
+    column = [0, 2]     # Takes the columns from the labels file that correspond to the index and the gender label
     df = pd.read_csv(labels_filename, delimiter="\t", usecols=column)
     gender_labels = {}
-    for index, row in df.iterrows():
-        gender_labels[str(index)] = (row['gender'])
-    print("done")
+    for index, row in df.iterrows():    # Goes through each row and extracts the index and the gender label
+        gender_labels[str(index)] = (row['gender'])     # Creates a dictionary entry with key = index and item= gender label
+    print("Begin processing faces")
     if os.path.isdir(images_dir):
         all_features = []
         all_labels = []
         count = 0
-        error = []
         for img_path in image_paths:
-            file_name=img_path.split('\\')[-1].split('.')[0]
+            file_name = img_path.split('\\')[-1].split('.')[0]    # Get's the number for each image from the file path
 
             # load image
             img = image.img_to_array(
@@ -165,14 +167,14 @@ def preprocess():
                                interpolation='bicubic'))
             resized_image = img.astype('uint8')
 
-            gray = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)
+            gray = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)      # Convert all colours of the image to grayscale
             gray = gray.astype('uint8')
-            gray = cv2.resize(gray, (55, 45), interpolation=cv2.INTER_AREA)
+            gray = cv2.resize(gray, (55, 45), interpolation=cv2.INTER_AREA)     # Decrease the size of the image
             all_features.append(gray)
             all_labels.append(gender_labels[file_name])
             if(count == 5000):
                 break
-
+    print("Finished processing faces")
     landmark_features = np.array(all_features)
     gender_labels = (np.array(all_labels) + 1)/2  # simply converts the -1 into 0, so male=0 and female=1
     return landmark_features, gender_labels

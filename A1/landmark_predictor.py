@@ -92,7 +92,14 @@ def get_features(image):  # Gets features of face
     return dlibout, resized_image
 
 
-def extract_features_labels():      # Gets features of all faces
+def process_image(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # Convert all colours of the image to grayscale
+    gray = gray.astype('uint8')
+    gray = cv2.resize(gray, (55, 45), interpolation=cv2.INTER_AREA)  # Decrease the size of the image
+    return gray
+
+
+def preprocess(extract_feature):      # Gets features of all faces
     """
     This function extracts the landmarks features for all images in the folder 'dataset/celeba'.
     It also extracts the gender label for each image.
@@ -123,7 +130,10 @@ def extract_features_labels():      # Gets features of all faces
                 image.load_img(img_path,
                                target_size=target_size,
                                interpolation='bicubic'))
-            features, _ = get_features(img)   # Get features
+            if extract_feature:
+                features, _ = get_features(img)   # Get features
+            else:
+                features = process_image(img)
             if features is not None:
                 count += 1
                 all_features.append(features)
@@ -138,12 +148,10 @@ def extract_features_labels():      # Gets features of all faces
     return landmark_features, gender_labels
 
 
+"""
+
 def preprocess():   # Grayscale and Resize all images
-    """
-    This function loads all the images in the folder 'dataset/celeba'. Converts them to grayscale
-    and resizes the images to smaller sizes for faster processing of the neural network
-    :return:
-    """
+
     image_paths = [os.path.join(images_dir, l) for l in os.listdir(images_dir)]
     target_size = None
     column = [0, 2]     # Takes the columns from the labels file that correspond to the index and the gender label
@@ -177,3 +185,5 @@ def preprocess():   # Grayscale and Resize all images
     landmark_features = np.array(all_features)
     gender_labels = (np.array(all_labels) + 1)/2  # simply converts the -1 into 0, so male=0 and female=1
     return landmark_features, gender_labels
+
+"""

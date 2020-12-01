@@ -1,4 +1,5 @@
-from tensorflow.keras.models import Sequential
+
+from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import Dense, Dropout, Flatten, BatchNormalization, Activation, MaxPooling2D, Conv2D
 from keras.constraints import maxnorm
 from keras.utils import np_utils
@@ -11,7 +12,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 """
 
 training_size = 7000
-
+testing = False
 
 def get_data():
     X, Y = lp.preprocess()
@@ -58,49 +59,55 @@ te_Y = np_utils.to_categorical(te_Y)
 class_num = te_Y.shape[1]
 input_shape = (tr_X.shape[1], tr_X.shape[2], 1)
 
-model = Sequential()
+if not testing:
+    model = Sequential()
 
-# Convolutional layers
-model.add(Conv2D(32, (3, 3), input_shape=input_shape, activation='relu', padding='same'))
-model.add(Dropout(0.2))
-model.add(BatchNormalization())
+    # Convolutional layers
+    model.add(Conv2D(32, (3, 3), input_shape=input_shape, activation='relu', padding='same'))
+    model.add(Dropout(0.2))
+    model.add(BatchNormalization())
 
-model.add(Conv2D(64, (3, 3), activation='relu', padding='same'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.2))
-model.add(BatchNormalization())
+    model.add(Conv2D(64, (3, 3), activation='relu', padding='same'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.2))
+    model.add(BatchNormalization())
 
-model.add(Flatten())
-model.add(Dropout(0.2))
+    model.add(Flatten())
+    model.add(Dropout(0.2))
 
-model.add(Dense(256, kernel_constraint=maxnorm(3)))
-model.add(Activation('relu'))
-model.add(Dropout(0.2))
-model.add(BatchNormalization())
+    model.add(Dense(256, kernel_constraint=maxnorm(3)))
+    model.add(Activation('relu'))
+    model.add(Dropout(0.2))
+    model.add(BatchNormalization())
 
-model.add(Dense(128, kernel_constraint=maxnorm(3)))
-model.add(Activation('relu'))
-model.add(Dropout(0.2))
-model.add(BatchNormalization())
+    model.add(Dense(128, kernel_constraint=maxnorm(3)))
+    model.add(Activation('relu'))
+    model.add(Dropout(0.2))
+    model.add(BatchNormalization())
 
-"""
-model.add(Dense(64, kernel_constraint=maxnorm(3)))
-model.add(Activation('relu'))
-model.add(Dropout(0.2))
-model.add(BatchNormalization())
-"""
+    """
+    model.add(Dense(64, kernel_constraint=maxnorm(3)))
+    model.add(Activation('relu'))
+    model.add(Dropout(0.2))
+    model.add(BatchNormalization())
+    """
 
-model.add(Dense(class_num))   #Final layer has same number of neurons as classes
-model.add(Activation('softmax'))
+    model.add(Dense(class_num))   #Final layer has same number of neurons as classes
+    model.add(Activation('softmax'))
 
-epochs = 150
-batch_size = 64
-optimizer = 'adam'
+    epochs = 10
+    batch_size = 64
+    optimizer = 'adam'
 
-model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
-#es_callback = EarlyStopping(monitor='val_loss', patience=3)
-# , callbacks=[es_callback]
-model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
+    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+    #es_callback = EarlyStopping(monitor='val_loss', patience=3)
+    # , callbacks=[es_callback]
+    model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
+    model.save("B1_NN_Model")
+    print("Saved Neural Network Model")
+else:
+    print("Loaded Neural Network Model")
+    model = load_model("B1_NN_Model")
 
 # Model evaluation
 scores = model.evaluate(te_X, te_Y, verbose=0)

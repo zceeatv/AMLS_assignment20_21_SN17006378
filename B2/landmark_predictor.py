@@ -1,11 +1,10 @@
-#import os
 import numpy as np
 from keras.preprocessing import image
 import cv2
 import dlib
 import os
 import pandas as pd
-from os.path import dirname, abspath
+from os.path import dirname, abspath, split
 from numpy import savetxt
 
 # PATH TO ALL IMAGES
@@ -180,13 +179,10 @@ def extract_eyes(testing):
         count = 0
         error = []
         for img_path in image_paths:
-            file_name = img_path.split('\\')[-1].split('.')[0]     # Get's the number for each image from the file path
+            file_name = split(img_path)[1].split('.')[0]     # Get's the number for each image from the file path
 
             # load image
-            img = image.img_to_array(
-                image.load_img(img_path,
-                               target_size=target_size,
-                               interpolation='bicubic'))
+            img = image.img_to_array(image.load_img(img_path,target_size=target_size, interpolation='bicubic'))
             features, _ = crop_eye(img, testing)
             count += 1
             if (count == 1000):
@@ -208,3 +204,51 @@ def extract_eyes(testing):
     np.savetxt("labels.txt", eye_colours)
     """
     return eyes, eye_colours, error
+
+def preprocess():
+    """
+    This function loads all the images in the folder 'dataset/cartoon_set'. Converts them to grayscale
+    and resizes the images to smaller sizes for faster processing of the neural network
+    :return:
+        faces:  an array of resized grayscaled images
+        face_shapes:      an array containing the face shape labels
+    """
+    image_paths = [os.path.join(images_dir, l) for l in os.listdir(images_dir)]
+    target_size = None
+    column = [0, 2]     # Takes the columns from the labels file that correspond to the index and the face shape label
+    df = pd.read_csv(labels_filename, delimiter="\t", usecols=column)
+    face_shapes = {}
+    for index, row in df.iterrows():  # Goes through each row and extracts the index and the face shape label
+        face_shapes[str(index)] = (row['face_shape'])   # Creates a dictionary entry with key = index and item= face shape label
+    print("Begin Preprocessing faces")
+    if os.path.isdir(images_dir):
+        all_features = []
+        all_labels = []
+        count = 0
+        error = []
+        for img_path in image_paths:
+            file_name = split(img_path)[1].split('.')[0]
+            # load image
+            img = image.img_to_array(
+                image.load_img(img_path,
+                               target_size=target_size,
+                               interpolation='bicubic'))
+            resized_image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            resized_image = resized_image.astype('uint8')
+            resized_image = cv2.resize(resized_image, (50, 50), interpolation=cv2.INTER_AREA)
+            all_features.append(resized_image)
+            all_labels.append(face_shapes[file_name])
+            if(count == 10000):
+                break
+    print("Finished preprocessing faces")
+    faces = np.array(all_features)
+    face_shapes = np.array(all_labels)
+
+    """For Saving to text files
+    arr_reshaped = landmark_features.reshape(landmark_features.shape[0], -1)
+    np.savetxt("features.txt", arr_reshaped)
+    np.savetxt("labels.txt", eye_colours)
+    """
+
+    return faces, face_shapes
+

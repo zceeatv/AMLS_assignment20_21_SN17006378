@@ -1,11 +1,10 @@
-#import os
 import numpy as np
 from keras.preprocessing import image
 import cv2
 import dlib
 import os
 import pandas as pd
-from os.path import dirname, abspath
+from os.path import dirname, abspath, split
 from numpy import savetxt
 
 # PATH TO ALL IMAGES
@@ -121,7 +120,7 @@ def extract_mouths():   # Gets face features and cuts out image of the mouth for
         count = 0
         error = []
         for img_path in image_paths:
-            file_name = img_path.split('\\')[-1].split('.')[0]    # Get's the number for each image from the file path
+            file_name = split(img_path)[1].split('.')[0]    # Get's the number for each image from the file path
 
             # load image
             img = image.img_to_array(
@@ -172,7 +171,7 @@ def preprocess():   # Grayscale and Resize all images
         all_labels = []
         count = 0
         for img_path in image_paths:
-            file_name = img_path.split('\\')[-1].split('.')[0]    # Get's the number for each image from the file path
+            file_name = split(img_path)[1].split('.')[0]    # Get's the number for each image from the file path
 
             # load image
             img = image.img_to_array(

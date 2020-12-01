@@ -93,8 +93,8 @@ model.add(BatchNormalization())
 model.add(Dense(class_num))   #Final layer has same number of neurons as classes
 model.add(Activation('softmax'))
 
-epochs = 40
-batch_size = 10
+epochs = 150
+batch_size = 64
 optimizer = 'adam'
 
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])

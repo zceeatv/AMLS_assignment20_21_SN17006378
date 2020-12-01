@@ -1,13 +1,8 @@
-import numpy as np
-from keras.preprocessing import image
-import cv2
-import dlib
-import os
-
 import landmark_predictor as lp
 import numpy as np
 from sklearn.metrics import classification_report,accuracy_score
 from sklearn import svm
+
 
 def get_data():
 
@@ -31,6 +26,7 @@ def get_data_import(X, y):
 
     return tr_X, tr_Y, te_X, te_Y
 
+
 # sklearn functions implementation
 def img_SVM(training_images, training_labels, test_images, test_labels):
     classifier = svm.SVC(kernel='linear')
@@ -40,7 +36,9 @@ def img_SVM(training_images, training_labels, test_images, test_labels):
 
     print(pred)
     return pred
-training_size = 100
+
+
+training_size = 4000
 
 """
 For import preprocessed

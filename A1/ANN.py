@@ -83,9 +83,9 @@ batch_size = 64
 optimizer = 'adam'
 
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
-es_callback = EarlyStopping(monitor='val_loss', patience=5)
+es_callback = EarlyStopping(monitor='val_loss', patience=10)
 
-model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
+model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size, callbacks=[es_callback])
 
 # Model evaluation
 scores = model.evaluate(te_X, te_Y, verbose=0)

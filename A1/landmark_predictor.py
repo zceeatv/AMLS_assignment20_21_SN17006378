@@ -95,7 +95,7 @@ def get_features(image):  # Gets features of face
 def process_image(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # Convert all colours of the image to grayscale
     gray = gray.astype('uint8')
-    gray = cv2.resize(gray, (55, 45), interpolation=cv2.INTER_AREA)  # Decrease the size of the image
+    gray = cv2.resize(gray, (45, 55), interpolation=cv2.INTER_AREA)  # Decrease the size of the image
     return gray
 
 
@@ -146,44 +146,3 @@ def preprocess(extract_feature):      # Gets features of all faces
     landmark_features = np.array(all_features)
     gender_labels = (np.array(all_labels) + 1)/2  # simply converts the -1 into 0, so male=0 and female=1
     return landmark_features, gender_labels
-
-
-"""
-
-def preprocess():   # Grayscale and Resize all images
-
-    image_paths = [os.path.join(images_dir, l) for l in os.listdir(images_dir)]
-    target_size = None
-    column = [0, 2]     # Takes the columns from the labels file that correspond to the index and the gender label
-    df = pd.read_csv(labels_filename, delimiter="\t", usecols=column)
-    gender_labels = {}
-    for index, row in df.iterrows():    # Goes through each row and extracts the index and the gender label
-        gender_labels[str(index)] = (row['gender'])     # Creates a dictionary entry with key = index and item= gender label
-    print("Begin processing faces")
-    if os.path.isdir(images_dir):
-        all_features = []
-        all_labels = []
-        count = 0
-        for img_path in image_paths:
-            file_name = split(img_path)[1].split('.')[0]   # Get's the number for each image from the file path
-
-            # load image
-            img = image.img_to_array(
-                image.load_img(img_path,
-                               target_size=target_size,
-                               interpolation='bicubic'))
-            resized_image = img.astype('uint8')
-
-            gray = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)      # Convert all colours of the image to grayscale
-            gray = gray.astype('uint8')
-            gray = cv2.resize(gray, (55, 45), interpolation=cv2.INTER_AREA)     # Decrease the size of the image
-            all_features.append(gray)
-            all_labels.append(gender_labels[file_name])
-            if(count == 5000):
-                break
-    print("Finished processing faces")
-    landmark_features = np.array(all_features)
-    gender_labels = (np.array(all_labels) + 1)/2  # simply converts the -1 into 0, so male=0 and female=1
-    return landmark_features, gender_labels
-
-"""

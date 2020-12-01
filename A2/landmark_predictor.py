@@ -48,7 +48,7 @@ def rect_to_bb(rect):
     return (x, y, w, h)
 
 
-def crop_mouth(image):  # Get facial feature and then crop to the mouth area
+def crop_mouth(image, extract_features, crop):  # Get facial feature and then crop to the mouth area
     """
     This function loads the image, detects the landmarks of the face
     :return:
@@ -86,25 +86,33 @@ def crop_mouth(image):  # Get facial feature and then crop to the mouth area
         face_shapes[:, i] = np.reshape(temp_shape, [136])
         face_areas[0, i] = w * h
     # find largest face and keep
+
     dlibout = np.reshape(np.transpose(face_shapes[:, np.argmax(face_areas)]), [68, 2])
-    mouth = dlibout[48:60]
-    corners = np.array([[np.amin(mouth, axis=0)[0], np.amin(mouth, axis=0)[1]], [np.amax(mouth, axis=0)[0], np.amax(mouth, axis=0)[1]]])
-    mouth = gray[corners[0][1]-10:corners[1][1]+10, corners[0][0]-10:corners[1][0]+10]
-    gray = cv2.resize(mouth, (60, 30), interpolation=cv2.INTER_AREA)
-    #cv2.imshow("original", gray)
-    #cv2.waitKey(0)
-    return gray, resized_image
+    if extract_features and crop:
+        dlibout = dlibout[48:67]
+    elif extract_features and not crop:
+        dlibout = dlibout
+    elif not extract_features:
+        dlibout = dlibout[48:67]
+        corners = np.array([[np.amin(dlibout, axis=0)[0], np.amin(dlibout, axis=0)[1]], [np.amax(dlibout, axis=0)[0], np.amax(dlibout, axis=0)[1]]])
+        mouth = gray[corners[0][1]-10:corners[1][1]+10, corners[0][0]-10:corners[1][0]+10]
+        dlibout = cv2.resize(mouth, (60, 30), interpolation=cv2.INTER_AREA)
 
+    """
+        cv2.imshow("crop", dlibout)
+        cv2.waitKey(0)
+        """
+    return dlibout, resized_image
 
+def process_image(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # Convert all colours of the image to grayscale
+    gray = gray.astype('uint8')
+    gray = cv2.resize(gray, (45, 55), interpolation=cv2.INTER_AREA)  # Decrease the size of the image
+    return gray
+
+"""
 def extract_mouths():   # Gets face features and cuts out image of the mouth for each face
-    """
-    This funtion extracts the landmarks features for all images in the folder 'dataset/celeba'.
-    It also extracts the gender label for each image.
-    :return:
-        landmark_features:  an array containing 68 landmark points for each image in which a face was detected
-        gender_labels:      an array containing the gender label (male=0 and female=1) for each image in
-                            which a face was detected
-    """
+
     image_paths = [os.path.join(images_dir, l) for l in os.listdir(images_dir)]
     target_size = None
 
@@ -127,6 +135,10 @@ def extract_mouths():   # Gets face features and cuts out image of the mouth for
                 image.load_img(img_path,
                                target_size=target_size,
                                interpolation='bicubic'))
+            if extract_feature:
+                features, _ = crop_mouth(img)   # Get features
+            else:
+                features = process_image(img)
             features, _ = crop_mouth(img)
             if features is not None:
                 count += 1
@@ -140,16 +152,16 @@ def extract_mouths():   # Gets face features and cuts out image of the mouth for
     landmark_features = np.array(all_features)
     smile_labels = (np.array(all_labels) + 1)/2  # simply converts the -1 into 0, so male=0 and female=1
 
-    """For Saving to text files
+    For Saving to text files
     arr_reshaped = landmark_features.reshape(landmark_features.shape[0], -1)
     np.savetxt("features.txt", arr_reshaped)
     np.savetxt("labels.txt", smile_labels)
-    """
+    
 
     return landmark_features, smile_labels
+"""
 
-
-def preprocess():   # Grayscale and Resize all images
+def preprocess(extract_feature, crop):   # Grayscale and Resize all images
     """
     This function loads all the images in the folder 'dataset/celeba'. Converts them to grayscale
     and resizes the images to smaller sizes for faster processing of the neural network
@@ -170,6 +182,7 @@ def preprocess():   # Grayscale and Resize all images
         all_features = []
         all_labels = []
         count = 0
+        error = []
         for img_path in image_paths:
             file_name = split(img_path)[1].split('.')[0]    # Get's the number for each image from the file path
 
@@ -178,16 +191,28 @@ def preprocess():   # Grayscale and Resize all images
                 image.load_img(img_path,
                                target_size=target_size,
                                interpolation='bicubic'))
-            resized_image = img.astype('uint8')
+            if not extract_feature and not crop:
+                features = process_image(img)
+            else:
+                features, _ = crop_mouth(img, extract_feature, crop)   # Get features
 
-            gray = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)      # Converts image to grayscale
-            gray = gray.astype('uint8')
-            gray = cv2.resize(gray, (55, 45), interpolation=cv2.INTER_AREA)     # Resizes image to smaller image
-            all_features.append(gray)
-            all_labels.append(smile_labels[file_name])
-            if(count == 5000):
-                break
+            if features is not None:
+                all_features.append(features)
+                all_labels.append(smile_labels[file_name])
+                if(count == 5000):
+                    break
+            else:
+                error.append(file_name) # If the dlib facial predictor could not detect facial features, add to error list for future reference
     print("Finished processing faces")
     faces = np.array(all_features)
     smile_labels = (np.array(all_labels) + 1)/2  # simply converts the -1 into 0, so male=0 and female=1
     return faces, smile_labels
+
+    """
+    This funtion extracts the landmarks features for all images in the folder 'dataset/celeba'.
+    It also extracts the gender label for each image.
+    :return:
+        landmark_features:  an array containing 68 landmark points for each image in which a face was detected
+        gender_labels:      an array containing the gender label (male=0 and female=1) for each image in
+                            which a face was detected
+    """

@@ -46,8 +46,9 @@ def get_data_import(X,Y):
 
     return tr_X, tr_Y, te_X, te_Y
 
-def get_data_preprocess():
-    X, Y = lp.preprocess()
+def get_data_preprocess(testing):
+    crop = 1
+    X, Y = lp.preprocess(crop, testing)
     tr_X = X[:training_size]
     tr_Y = Y[:training_size]
     te_X = X[training_size:]
@@ -63,7 +64,7 @@ tr_X, tr_Y, te_X, te_Y= get_data_import(X,y)
 
 """
 #tr_X, tr_Y, te_X, te_Y, unidentifiable = get_data(testing)
-tr_X, tr_Y, te_X, te_Y = get_data_preprocess()
+tr_X, tr_Y, te_X, te_Y = get_data_preprocess(testing)
 # normalize the inputs from 0-255 to between 0 and 1 by dividing by 255
 tr_X = tr_X.astype('float32')
 te_X = te_X.astype('float32')
@@ -117,7 +118,7 @@ if not testing:
     model.add(Dense(class_num))  #Final layer has same number of neurons as classes
     model.add(Activation('softmax'))
 
-    epochs = 150
+    epochs = 10
     batch_size = 64
     optimizer = 'adam'
 

@@ -14,7 +14,8 @@ training_size = 4000
 testing = False
 
 def get_data():
-    X, Y = lp.preprocess(0)
+    extract_features = 0
+    X, Y = lp.preprocess(extract_features)
     tr_X = X[:training_size]
     tr_Y = Y[:training_size]
     te_X = X[training_size:]

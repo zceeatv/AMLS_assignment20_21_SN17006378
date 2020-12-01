@@ -15,7 +15,9 @@ testing = False
 
 
 def get_data():
-    X, Y = lp.extract_mouths()
+    extract_features = 0
+    crop_mouth = 0
+    X, Y = lp.preprocess(extract_features, crop_mouth)
     tr_X = X[:training_size]
     tr_Y = Y[:training_size]
     te_X = X[training_size:]
@@ -95,7 +97,7 @@ if not testing:
     model.add(Dense(class_num))  #Final layer has same number of neurons as classes
     model.add(Activation('softmax'))
 
-    epochs = 200
+    epochs = 10
     batch_size = 64
     optimizer = 'adam'
 

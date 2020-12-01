@@ -149,63 +149,13 @@ def identify_sunglasses(eyes):
     for pixel in reshape:
         if np.array_equal(pixel, colour):
             count += 1
-    if count > 1200:
+    if count > 1000:
         return True
     else:
         return False
 
 
-def extract_eyes(testing):
-    """
-    This funtion crops the eyes for all images in the folder 'dataset/cartoon_set'.
-    It also extracts the eye colour label for each image.
-    :return:
-        eyes:  an array of cropped eye images
-        eye_colours:     an array containing the eye colour labels
-    """
-    print("Begin extracting eyes from faces")
-    image_paths = [os.path.join(images_dir, l) for l in os.listdir(images_dir)]
-    target_size = None
-
-    column = [0, 1]     # Takes the columns from the labels file that correspond to the index and the eye colour label
-    df = pd.read_csv(labels_filename, delimiter="\t", usecols=column)
-    eye_colours = {}
-    for index, row in df.iterrows():    # Goes through each row and extracts the index and the eye colour label
-        eye_colours[str(index)] = (row['eye_color'])    # Creates a dictionary entry with key = index and item= eye colour label
-
-    if os.path.isdir(images_dir):
-        all_features = []
-        all_labels = []
-        count = 0
-        error = []
-        for img_path in image_paths:
-            file_name = split(img_path)[1].split('.')[0]     # Get's the number for each image from the file path
-
-            # load image
-            img = image.img_to_array(image.load_img(img_path,target_size=target_size, interpolation='bicubic'))
-            features, _ = crop_eye(img, testing)
-            count += 1
-            if (count == 1000):
-                break
-
-            if features is not None:
-                all_features.append(features)
-                all_labels.append(eye_colours[file_name])
-            else:
-                error.append(file_name)
-
-    print("Finished extracting eyes from faces")
-    eyes = np.array(all_features)
-    eye_colours = np.array(all_labels)
-
-    """For Saving to text files
-    arr_reshaped = landmark_features.reshape(landmark_features.shape[0], -1)
-    np.savetxt("features.txt", arr_reshaped)
-    np.savetxt("labels.txt", eye_colours)
-    """
-    return eyes, eye_colours, error
-
-def preprocess():
+def preprocess(crop, testing):
     """
     This function loads all the images in the folder 'dataset/cartoon_set'. Converts them to grayscale
     and resizes the images to smaller sizes for faster processing of the neural network
@@ -233,13 +183,20 @@ def preprocess():
                 image.load_img(img_path,
                                target_size=target_size,
                                interpolation='bicubic'))
-            resized_image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            resized_image = resized_image.astype('uint8')
-            resized_image = cv2.resize(resized_image, (50, 50), interpolation=cv2.INTER_AREA)
-            all_features.append(resized_image)
-            all_labels.append(face_shapes[file_name])
-            if(count == 10000):
-                break
+
+            if crop:
+                features, _ = crop_eye(img, testing)   # Get features
+            else:
+                features = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                features = features.astype('uint8')
+                features = cv2.resize(features, (50, 50), interpolation=cv2.INTER_AREA)
+            if features is not None:
+                all_features.append(features)
+                all_labels.append(face_shapes[file_name])
+                if(count == 10000):
+                    break
+            else:
+                error.append(file_name) # If the dlib facial predictor could not detect facial features, add to error list for future reference
     print("Finished preprocessing faces")
     faces = np.array(all_features)
     face_shapes = np.array(all_labels)

@@ -16,7 +16,7 @@ training_size = 4000
 testing = False
 
 def get_data():
-    extract_features = 1
+    extract_features = 0
     X, Y = lp.preprocess(extract_features)
     tr_X = X[:training_size]
     tr_Y = Y[:training_size]
@@ -50,26 +50,26 @@ if not testing:
 
     # Convolutional layers
     model.add(Conv2D(32, (3, 3), input_shape=input_shape, activation='relu', padding='same'))
-    model.add(Dropout(0.2))
+    model.add(Dropout(0.3))
     model.add(BatchNormalization())
 
     model.add(Conv2D(64, (3, 3), activation='relu', padding='same'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.2))
+    model.add(Dropout(0.3))
     model.add(BatchNormalization())
 
 
     model.add(Flatten())
-    model.add(Dropout(0.2))
+    model.add(Dropout(0.3))
 
-    model.add(Dense(256, kernel_constraint=maxnorm(3)))
+    model.add(Dense(64, kernel_constraint=maxnorm(3)))
     model.add(Activation('relu'))
-    model.add(Dropout(0.2))
+    model.add(Dropout(0.3))
     model.add(BatchNormalization())
 
-    model.add(Dense(128, kernel_constraint=maxnorm(3)))
+    model.add(Dense(32, kernel_constraint=maxnorm(3)))
     model.add(Activation('relu'))
-    model.add(Dropout(0.2))
+    model.add(Dropout(0.3))
     model.add(BatchNormalization())
 
     """
@@ -82,9 +82,9 @@ if not testing:
     model.add(Dense(class_num))  #Final layer has same number of neurons as classes
     model.add(Activation('softmax'))
 
-    epochs = 200
+    epochs = 50
     batch_size = 64
-    optimizer = optimizers.Adam(lr=0.01)
+    optimizer = optimizers.Nadam()
 
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
     es_callback = EarlyStopping(monitor='val_loss', patience=10)

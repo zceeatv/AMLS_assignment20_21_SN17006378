@@ -159,17 +159,19 @@ def preprocess(crop, testing):
     """
     This function loads all the images in the folder 'dataset/cartoon_set'. Converts them to grayscale
     and resizes the images to smaller sizes for faster processing of the neural network
+    :param crop: True or False for if the faces are to be cropped to just the eye
+    :param testing: true or False for if neglecting sunglasses will be used or not
     :return:
-        faces:  an array of resized grayscaled images
-        face_shapes:      an array containing the face shape labels
+            faces:  an array of resized grayscaled images
+            face_shapes:      an array containing the face shape labels
     """
     image_paths = [os.path.join(images_dir, l) for l in os.listdir(images_dir)]
     target_size = None
-    column = [0, 2]     # Takes the columns from the labels file that correspond to the index and the face shape label
+    column = [0, 1]     # Takes the columns from the labels file that correspond to the index and the face shape label
     df = pd.read_csv(labels_filename, delimiter="\t", usecols=column)
-    face_shapes = {}
-    for index, row in df.iterrows():  # Goes through each row and extracts the index and the face shape label
-        face_shapes[str(index)] = (row['face_shape'])   # Creates a dictionary entry with key = index and item= face shape label
+    eye_colours = {}
+    for index, row in df.iterrows():  # Goes through each row and extracts the index and the eye colour label
+        eye_colours[str(index)] = (row['eye_color'])   # Creates a dictionary entry with key = index and item= eye colour label
     print("Begin Preprocessing faces")
     if os.path.isdir(images_dir):
         all_features = []
@@ -192,14 +194,14 @@ def preprocess(crop, testing):
                 features = cv2.resize(features, (50, 50), interpolation=cv2.INTER_AREA)
             if features is not None:
                 all_features.append(features)
-                all_labels.append(face_shapes[file_name])
+                all_labels.append(eye_colours[file_name])
                 if(count == 10000):
                     break
             else:
                 error.append(file_name) # If the dlib facial predictor could not detect facial features, add to error list for future reference
     print("Finished preprocessing faces")
     faces = np.array(all_features)
-    face_shapes = np.array(all_labels)
+    eye_colours = np.array(all_labels)
 
     """For Saving to text files
     arr_reshaped = landmark_features.reshape(landmark_features.shape[0], -1)
@@ -207,5 +209,5 @@ def preprocess(crop, testing):
     np.savetxt("labels.txt", eye_colours)
     """
 
-    return faces, face_shapes
+    return faces, eye_colours
 

@@ -101,10 +101,11 @@ def process_image(image):
 
 def preprocess(extract_feature):      # Gets features of all faces
     """
-    This function extracts the landmarks features for all images in the folder 'dataset/celeba'.
-    It also extracts the gender label for each image.
+    This function loads all the images in the folder 'dataset/cartoon_set'. Converts them to grayscale
+    and resizes the images to smaller sizes for faster processing of the neural network
+    :param extract_feature: true or False for if extracting features or to just preprocess faces
     :return:
-        landmark_features:  an array containing 68 landmark points for each image in which a face was detected
+        landmark_features:  an array containing 68 landmark points for each image in which a face was detected or preprocessed faces
         gender_labels:      an array containing the gender label (male=0 and female=1) for each image in
                             which a face was detected
     """

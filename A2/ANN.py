@@ -1,10 +1,13 @@
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import Dense, Dropout, Flatten, BatchNormalization, Activation, MaxPooling2D, Conv2D
 from keras.constraints import maxnorm
+from tensorflow.keras import optimizers
 from keras.utils import np_utils
 import landmark_predictor as lp
 from tensorflow.keras.callbacks import EarlyStopping
-
+import matplotlib.pyplot as plt
+from numpy import where, loadtxt
+import keras
 """
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
@@ -37,9 +40,9 @@ def get_data_import(X, Y):
 
 """
 # loading in the data
-X = np.loadtxt('features.txt')
+X = loadtxt('features.txt')
 X = X.reshape(X.shape[0], X.shape[1] // 2, 2)
-y = np.loadtxt('labels.txt')
+y = loadtxt('labels.txt')
 tr_X, tr_Y, te_X, te_Y= get_data_import(X,y)
 """
 tr_X, tr_Y, te_X, te_Y = get_data()
@@ -58,7 +61,10 @@ te_X = te_X.reshape(te_X.shape[0], te_X.shape[1], te_X.shape[2], 1)
 # one hot encode outputs
 tr_Y = np_utils.to_categorical(tr_Y)
 te_Y = np_utils.to_categorical(te_Y)
+#tr_Y[where(tr_Y == 0)] = -1
+#te_Y[where(te_Y == 0)] = -1
 class_num = te_Y.shape[1]
+#class_num = 1
 input_shape = (tr_X.shape[1], tr_X.shape[2], 1)
 
 if not testing:
@@ -95,22 +101,36 @@ if not testing:
     model.add(BatchNormalization())
 
     model.add(Dense(class_num))  #Final layer has same number of neurons as classes
+    #model.add(Activation('tanh'))
     model.add(Activation('softmax'))
 
-    epochs = 10
+    epochs = 100
     batch_size = 64
-    optimizer = 'adam'
+    optimizer = optimizers.Adam(learning_rate=0.001)
+    loss_function_used = 'categorical_crossentropy'
+    model.compile(loss=loss_function_used, optimizer=optimizer, metrics=['accuracy'])
+    #model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
-    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
     es_callback = EarlyStopping(monitor='val_loss', patience=10)
     # , callbacks=[es_callback]
-    model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
+    history = model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
     model.save("A2_NN_Model")
     print("Saved Neural Network Model")
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
 
 else:
     print("Loaded Neural Network Model")
     model = load_model("A2_NN_Model")
+    epochs = 10000
+    batch_size = 64
+    model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
+    model.save("A2_NN_Model")
 # Model evaluation
 scores = model.evaluate(te_X, te_Y, verbose=0)
 print("Accuracy: %.2f%%" % (scores[1]*100))

@@ -5,6 +5,7 @@ from keras.constraints import maxnorm
 from keras.utils import np_utils
 import landmark_predictor as lp
 from tensorflow.keras.callbacks import EarlyStopping
+import matplotlib.pyplot as plt
 
 """
 import os
@@ -26,10 +27,10 @@ if gpus:
 
 training_size = 7000
 testing = False
+crop = False
 
-
-def get_data(testing):
-    X, Y, unidentifiable = lp.extract_eyes(testing)
+def get_data(crop, testing):
+    X, Y, unidentifiable = lp.extract_eyes(crop, testing)
     tr_X = X[:training_size]
     tr_Y = Y[:training_size]
     te_X = X[training_size:]
@@ -46,8 +47,7 @@ def get_data_import(X,Y):
 
     return tr_X, tr_Y, te_X, te_Y
 
-def get_data_preprocess(testing):
-    crop = 1
+def get_data_preprocess(crop, testing):
     X, Y = lp.preprocess(crop, testing)
     tr_X = X[:training_size]
     tr_Y = Y[:training_size]
@@ -55,16 +55,16 @@ def get_data_preprocess(testing):
     te_Y = Y[training_size:]
 
     return tr_X, tr_Y, te_X, te_Y
-"""
+
 # loading in the data
 X = np.loadtxt('features.txt')
 X = X.reshape(X.shape[0], 30, 50, 3)
 y = np.loadtxt('labels.txt')
 tr_X, tr_Y, te_X, te_Y= get_data_import(X,y)
 
-"""
-#tr_X, tr_Y, te_X, te_Y, unidentifiable = get_data(testing)
-tr_X, tr_Y, te_X, te_Y = get_data_preprocess(testing)
+
+#tr_X, tr_Y, te_X, te_Y, unidentifiable = get_data(crop, testing)
+#tr_X, tr_Y, te_X, te_Y = get_data_preprocess(testing)
 # normalize the inputs from 0-255 to between 0 and 1 by dividing by 255
 tr_X = tr_X.astype('float32')
 te_X = te_X.astype('float32')
@@ -118,16 +118,23 @@ if not testing:
     model.add(Dense(class_num))  #Final layer has same number of neurons as classes
     model.add(Activation('softmax'))
 
-    epochs = 10
+    epochs = 100
     batch_size = 64
     optimizer = 'adam'
 
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
     es_callback = EarlyStopping(monitor='val_loss', patience=3)
 
-    model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
+    history = model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
     model.save("B2_NN_Model")
     print("Saved Neural Network Model")
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
 
 else:
     print("Loaded Neural Network Model")

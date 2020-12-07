@@ -4,6 +4,8 @@ from keras.constraints import maxnorm
 from keras.utils import np_utils
 import landmark_predictor as lp
 from tensorflow.keras.callbacks import EarlyStopping
+import matplotlib.pyplot as plt
+from tensorflow.keras import optimizers
 
 """
 import os
@@ -14,7 +16,7 @@ training_size = 4000
 testing = False
 
 def get_data():
-    extract_features = 0
+    extract_features = 1
     X, Y = lp.preprocess(extract_features)
     tr_X = X[:training_size]
     tr_Y = Y[:training_size]
@@ -80,17 +82,23 @@ if not testing:
     model.add(Dense(class_num))  #Final layer has same number of neurons as classes
     model.add(Activation('softmax'))
 
-    epochs = 40
+    epochs = 200
     batch_size = 64
-    optimizer = 'adam'
+    optimizer = optimizers.Adam(lr=0.01)
 
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
     es_callback = EarlyStopping(monitor='val_loss', patience=10)
 
-    model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size, callbacks=[es_callback])
+    history = model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
     model.save("A1_NN_Model")
     print("Saved Neural Network Model")
-
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
 else:
     print("Loaded Neural Network Model")
     model = load_model("A1_NN_Model")

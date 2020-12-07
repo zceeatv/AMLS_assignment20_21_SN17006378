@@ -5,6 +5,7 @@ from keras.constraints import maxnorm
 from keras.utils import np_utils
 import landmark_predictor as lp
 from tensorflow.keras.callbacks import EarlyStopping
+import matplotlib.pyplot as plt
 
 """
 import os
@@ -102,9 +103,16 @@ if not testing:
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
     #es_callback = EarlyStopping(monitor='val_loss', patience=3)
     # , callbacks=[es_callback]
-    model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
+    history = model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
     model.save("B1_NN_Model")
     print("Saved Neural Network Model")
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
 else:
     print("Loaded Neural Network Model")
     model = load_model("B1_NN_Model")

@@ -50,10 +50,10 @@ def rect_to_bb(rect):
 
 def crop_mouth(image, extract_features, crop):  # Get facial feature and then crop to the mouth area
     """
-    This function loads the image, detects the landmarks of the face
+    This function loads the image, detects the landmarks of the face or crops out the mouth of the image
+    :param extract_features: True or False for if extracting features of the mouth
+    :param crop: True or False for if cropping the mouth from faces
     :return:
-        dlibout:  an array containing 68 landmark points
-        resized_image: an array containing processed images
     """
     # load the input image, resize it, and convert it to grayscale
     resized_image = image.astype('uint8')
@@ -107,67 +107,19 @@ def crop_mouth(image, extract_features, crop):  # Get facial feature and then cr
 def process_image(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # Convert all colours of the image to grayscale
     gray = gray.astype('uint8')
-    gray = cv2.resize(gray, (45, 55), interpolation=cv2.INTER_AREA)  # Decrease the size of the image
+    gray = cv2.resize(gray, (45*2, 55*2), interpolation=cv2.INTER_AREA)  # Decrease the size of the image
     return gray
 
-"""
-def extract_mouths():   # Gets face features and cuts out image of the mouth for each face
-
-    image_paths = [os.path.join(images_dir, l) for l in os.listdir(images_dir)]
-    target_size = None
-
-    column = [0, 3]     # Takes the columns from the labels file that correspond to the index and the smile label
-    df = pd.read_csv(labels_filename, delimiter="\t", usecols=column)
-    smile_labels = {}
-    for index, row in df.iterrows():     # Goes through each row and extracts the index and the smile label
-        smile_labels[str(index)] = (row['smiling'])     # Creates a dictionary entry with key = index and item= smile label
-    print("Begin extracting facial landmarks")
-    if os.path.isdir(images_dir):
-        all_features = []
-        all_labels = []
-        count = 0
-        error = []
-        for img_path in image_paths:
-            file_name = split(img_path)[1].split('.')[0]    # Get's the number for each image from the file path
-
-            # load image
-            img = image.img_to_array(
-                image.load_img(img_path,
-                               target_size=target_size,
-                               interpolation='bicubic'))
-            if extract_feature:
-                features, _ = crop_mouth(img)   # Get features
-            else:
-                features = process_image(img)
-            features, _ = crop_mouth(img)
-            if features is not None:
-                count += 1
-                all_features.append(features)
-                all_labels.append(smile_labels[file_name])
-                if(count == 5000):
-                    break
-            else:
-                error.append(file_name)
-    print("Finished extracting mouths from faces")
-    landmark_features = np.array(all_features)
-    smile_labels = (np.array(all_labels) + 1)/2  # simply converts the -1 into 0, so male=0 and female=1
-
-    For Saving to text files
-    arr_reshaped = landmark_features.reshape(landmark_features.shape[0], -1)
-    np.savetxt("features.txt", arr_reshaped)
-    np.savetxt("labels.txt", smile_labels)
-    
-
-    return landmark_features, smile_labels
-"""
 
 def preprocess(extract_feature, crop):   # Grayscale and Resize all images
     """
-    This function loads all the images in the folder 'dataset/celeba'. Converts them to grayscale
+    This function loads all the images in the folder 'dataset/cartoon_set'. Converts them to grayscale
     and resizes the images to smaller sizes for faster processing of the neural network
+    :param crop: True or False for if the faces are to be cropped to just the mouth
+    :param extract_feature: true or False for if extracting features or to just preprocess faces
     :return:
-        faces:  an array resized grayscaled images
-        smile_labels:  an array containing the smile labels
+            faces:  an array resized grayscaled images or features
+            smile_labels:  an array containing the smile labels
     """
     image_paths = [os.path.join(images_dir, l) for l in os.listdir(images_dir)]
     target_size = None

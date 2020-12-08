@@ -61,15 +61,15 @@ te_Y = np_utils.to_categorical(te_Y)
 class_num = te_Y.shape[1]
 input_shape = (tr_X.shape[1], tr_X.shape[2], 1)
 
-def create_model(optimizer='adam'):
+def create_model():
     model = Sequential()
 
     # Convolutional layers
-    model.add(Conv2D(32, (3, 3), input_shape=input_shape, activation='relu', padding='same'))
+    model.add(Conv2D(32, (3, 3), input_shape=input_shape, activation="relu", padding='same'))
     model.add(Dropout(0.2))
     model.add(BatchNormalization())
 
-    model.add(Conv2D(64, (3, 3), activation='relu', padding='same'))
+    model.add(Conv2D(64, (3, 3), activation="relu", padding='same'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.2))
     model.add(BatchNormalization())
@@ -78,13 +78,13 @@ def create_model(optimizer='adam'):
     model.add(Flatten())
     model.add(Dropout(0.2))
 
-    model.add(Dense(256, kernel_constraint=maxnorm(3)))
-    model.add(Activation('relu'))
+    model.add(Dense(256, kernel_constraint=maxnorm(4), kernel_initializer="he_uniform"))
+    model.add(Activation("relu"))
     model.add(Dropout(0.2))
     model.add(BatchNormalization())
 
-    model.add(Dense(128, kernel_constraint=maxnorm(3)))
-    model.add(Activation('relu'))
+    model.add(Dense(128, kernel_constraint=maxnorm(4),  kernel_initializer="he_uniform"))
+    model.add(Activation("relu"))
     model.add(Dropout(0.2))
     model.add(BatchNormalization())
 
@@ -93,7 +93,7 @@ def create_model(optimizer='adam'):
 
     #optimizer = optimizers.Adam(lr=0.01)
 
-    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+    model.compile(loss='categorical_crossentropy', optimizer="RMSprop", metrics=['accuracy'])
     es_callback = EarlyStopping(monitor='val_loss', patience=10)
 
     return model
@@ -109,30 +109,32 @@ plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
 plt.show()
-model = KerasClassifier(build_fn=create_model, verbose=0)
-
+"""
 # Optimising epoch and batch size
-batch_size = [10, 20, 40, 60, 80, 100]
-epochs = [10, 20, 30, 40, 50, 100]
+model = KerasClassifier(build_fn=create_model, verbose=0)
+batch_size = [40, 60, 80]
+epochs = [10, 20, 30, 40]
 param_grid = dict(batch_size=batch_size, epochs=epochs)
 grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=3)
 grid_result = grid.fit(tr_X, tr_Y)
+
+
 """
-
-
 # Optimising Training Optimisation Algorithm
 model = KerasClassifier(build_fn=create_model, epochs=20, batch_size=64, verbose=0)
 optimizer = ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']
 param_grid = dict(optimizer=optimizer)
 grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=3)
 grid_result = grid.fit(tr_X, tr_Y)
-"""     
+
+
 # Optimising Network Weight Initialisation
 model = KerasClassifier(build_fn=create_model, epochs=20, batch_size=64, verbose=0)
 init_mode = ['uniform', 'lecun_uniform', 'normal', 'zero', 'glorot_normal', 'glorot_uniform', 'he_normal', 'he_uniform']
 param_grid = dict(init_mode=init_mode)
 grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=3)
 grid_result = grid.fit(tr_X, tr_Y)
+
 
 # Optimising Neuron Activation Function
 model = KerasClassifier(build_fn=create_model, epochs=30, batch_size=64, verbose=0)
@@ -141,16 +143,18 @@ param_grid = dict(activation=activation)
 grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=3)
 grid_result = grid.fit(tr_X, tr_Y)
 
+
 # Optimising Dropout Regularisation
 model = KerasClassifier(build_fn=create_model, epochs=30, batch_size=64, verbose=0)
-weight_constraint = [1, 2, 3, 4, 5]
-dropout_rate = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+weight_constraint = [2, 3, 4]
+dropout_rate = [0.1, 0.2, 0.3]
 param_grid = dict(dropout_rate=dropout_rate, weight_constraint=weight_constraint)
 grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=3)
 grid_result = grid.fit(tr_X, tr_Y)
-
+"""
+"""
 #Optimising Number of Neurons in Hidden Layer
-model = KerasClassifier(build_fn=create_model, epochs=30, batch_size=64, verbose=0)
+model = KerasClassifier(build_fn=create_model, epochs=20, batch_size=64, verbose=0)
 neurons = [1, 5, 10, 15, 20, 25, 30]
 param_grid = dict(neurons=neurons)
 grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=3)

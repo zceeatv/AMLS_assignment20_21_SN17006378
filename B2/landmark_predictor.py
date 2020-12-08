@@ -8,10 +8,14 @@ from os.path import dirname, abspath, split
 from numpy import savetxt
 
 # PATH TO ALL IMAGES
-global basedir, image_paths, target_size
 basedir = dirname(dirname(abspath(__file__)))
-labels_filename = os.path.join(basedir, 'datasets\\cartoon_set\\labels.csv')
-images_dir = os.path.join(basedir, 'datasets\\cartoon_set\\img')
+labels_filename = os.path.join(basedir, 'datasets')
+labels_filename = os.path.join(labels_filename, 'cartoon_set')
+labels_filename = os.path.join(labels_filename, 'labels.csv')
+
+images_dir = os.path.join(basedir, 'datasets')
+images_dir = os.path.join(images_dir, 'cartoon_set')
+images_dir = os.path.join(images_dir, 'img')
 
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')

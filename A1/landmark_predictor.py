@@ -9,10 +9,16 @@ from numpy import savetxt
 
 
 # PATH TO ALL IMAGES
-global basedir, image_paths, target_size
+#global basedir, image_paths, target_size
 basedir = dirname(dirname(abspath(__file__)))
-labels_filename = os.path.join(basedir, 'datasets\\celeba\\labels.csv')
-images_dir = os.path.join(basedir, 'datasets\\celeba\\img')
+labels_filename = os.path.join(basedir, 'datasets')
+labels_filename = os.path.join(labels_filename, 'celeba')
+labels_filename = os.path.join(labels_filename, 'labels.csv')
+
+
+images_dir = os.path.join(basedir, 'datasets')
+images_dir = os.path.join(images_dir, 'celeba')
+images_dir = os.path.join(images_dir, 'img')
 
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')

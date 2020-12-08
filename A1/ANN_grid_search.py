@@ -83,7 +83,7 @@ def create_model(neurons=1):
 
     return model
 
-"""
+
 
 # Optimising epoch and batch size
 model = KerasClassifier(build_fn=create_model, verbose=0)
@@ -93,7 +93,7 @@ param_grid = dict(batch_size=batch_size, epochs=epochs)
 grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=3)
 grid_result = grid.fit(tr_X, tr_Y)
 
-
+"""
 # Optimising Training Optimisation Algorithm
 model = KerasClassifier(build_fn=create_model, epochs=20, batch_size=60, verbose=0)
 optimizer = ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']
@@ -125,7 +125,7 @@ dropout_rate = [0.1, 0.2, 0.3]
 param_grid = dict(dropout_rate=dropout_rate, weight_constraint=weight_constraint)
 grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=3)
 grid_result = grid.fit(tr_X, tr_Y)
-"""
+
 
 #Optimising Number of Neurons in Hidden Layer
 model = KerasClassifier(build_fn=create_model, epochs=20, batch_size=64, verbose=0)
@@ -133,7 +133,7 @@ neurons = [256, 128, 64, 32, 16]
 param_grid = dict(neurons=neurons)
 grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=3)
 grid_result = grid.fit(tr_X, tr_Y)
-
+"""
 print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
 means = grid_result.cv_results_['mean_test_score']
 stds = grid_result.cv_results_['std_test_score']

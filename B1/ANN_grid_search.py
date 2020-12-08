@@ -61,7 +61,7 @@ te_Y = np_utils.to_categorical(te_Y)
 class_num = te_Y.shape[1]
 input_shape = (tr_X.shape[1], tr_X.shape[2], 1)
 
-def create_model():
+def create_model(neurons=1):
     model = Sequential()
 
     # Convolutional layers
@@ -78,12 +78,12 @@ def create_model():
     model.add(Flatten())
     model.add(Dropout(0.2))
 
-    model.add(Dense(256, kernel_constraint=maxnorm(4), kernel_initializer="he_uniform"))
+    model.add(Dense(neurons, kernel_constraint=maxnorm(4), kernel_initializer="he_uniform"))
     model.add(Activation("relu"))
     model.add(Dropout(0.2))
     model.add(BatchNormalization())
 
-    model.add(Dense(128, kernel_constraint=maxnorm(4),  kernel_initializer="he_uniform"))
+    model.add(Dense(neurons/2, kernel_constraint=maxnorm(4),  kernel_initializer="he_uniform"))
     model.add(Activation("relu"))
     model.add(Dropout(0.2))
     model.add(BatchNormalization())
@@ -109,7 +109,7 @@ plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
 plt.show()
-"""
+
 # Optimising epoch and batch size
 model = KerasClassifier(build_fn=create_model, verbose=0)
 batch_size = [40, 60, 80]
@@ -119,7 +119,7 @@ grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=3)
 grid_result = grid.fit(tr_X, tr_Y)
 
 
-"""
+
 # Optimising Training Optimisation Algorithm
 model = KerasClassifier(build_fn=create_model, epochs=20, batch_size=64, verbose=0)
 optimizer = ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']
@@ -152,14 +152,14 @@ param_grid = dict(dropout_rate=dropout_rate, weight_constraint=weight_constraint
 grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=3)
 grid_result = grid.fit(tr_X, tr_Y)
 """
-"""
+
 #Optimising Number of Neurons in Hidden Layer
 model = KerasClassifier(build_fn=create_model, epochs=20, batch_size=64, verbose=0)
-neurons = [1, 5, 10, 15, 20, 25, 30]
+neurons = [1024, 512, 256]
 param_grid = dict(neurons=neurons)
 grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=3)
 grid_result = grid.fit(tr_X, tr_Y)
-"""
+
 print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
 means = grid_result.cv_results_['mean_test_score']
 stds = grid_result.cv_results_['std_test_score']

@@ -10,11 +10,11 @@ from numpy import savetxt
 
 # PATH TO ALL IMAGES
 basedir = dirname(dirname(abspath(__file__)))
-labels_filename = os.path.join(basedir, 'datasets')
+labels_filename = os.path.join(basedir, 'Datasets')
 labels_filename = os.path.join(labels_filename, 'cartoon_set')
 labels_filename = os.path.join(labels_filename, 'labels.csv')
 
-images_dir = os.path.join(basedir, 'datasets')
+images_dir = os.path.join(basedir, 'Datasets')
 images_dir = os.path.join(images_dir, 'cartoon_set')
 images_dir = os.path.join(images_dir, 'img')
 

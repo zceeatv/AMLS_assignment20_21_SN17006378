@@ -6,14 +6,13 @@ from A1 import preprocess_data as lp
 from tensorflow.keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
 from tensorflow.keras import optimizers
-
 """
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 """
 
-def get_data():
-    extract_features = 0
+
+def get_data(extract_features):
     X, Y = lp.preprocess(extract_features)
     dataset_size = X.shape[0]
     training_size = int(dataset_size * 0.8)
@@ -29,9 +28,11 @@ def get_data():
 
 
 def execute(testing):
-    # loading in the data
+    # Global variables
+    extract_features = True
 
-    tr_X, tr_Y, va_X, va_Y, te_X, te_Y = get_data()
+    # loading in the data
+    tr_X, tr_Y, va_X, va_Y, te_X, te_Y = get_data(extract_features)
 
     # normalize the inputs from 0-255 to between 0 and 1 by dividing by 255
     tr_X = tr_X.astype('float32')
@@ -110,5 +111,5 @@ def execute(testing):
     scores = model.evaluate(te_X, te_Y, verbose=0)
     print("Accuracy: %.2f%%" % (scores[1]*100))
 
-
+execute(False)
 

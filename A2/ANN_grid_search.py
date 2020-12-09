@@ -16,7 +16,6 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 training_size = 4000
 testing = False
 
-
 def get_data():
     extract_features = 0
     crop_mouth = 0

@@ -8,7 +8,6 @@ from os.path import dirname, abspath, split
 from numpy import savetxt
 
 # PATH TO ALL IMAGES
-global basedir, image_paths, target_size
 basedir = dirname(dirname(abspath(__file__)))
 labels_filename = os.path.join(basedir, 'datasets')
 labels_filename = os.path.join(labels_filename, 'celeba')

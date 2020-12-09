@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
-
 def get_data(crop, testing):
     X, Y, unidentifiable = extract_eyes(crop, testing)
     dataset_size = X.shape[0]

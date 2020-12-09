@@ -30,6 +30,7 @@ def get_data():
 
 def execute(testing):
     # loading in the data
+
     tr_X, tr_Y, va_X, va_Y, te_X, te_Y = get_data()
 
     # normalize the inputs from 0-255 to between 0 and 1 by dividing by 255

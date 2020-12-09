@@ -8,6 +8,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
 from numpy import where, loadtxt
 
+
 """
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"

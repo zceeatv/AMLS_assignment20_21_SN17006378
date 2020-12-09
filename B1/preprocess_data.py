@@ -7,6 +7,7 @@ import pandas as pd
 from os.path import dirname, abspath, split
 from numpy import savetxt
 
+
 # PATH TO ALL IMAGES
 basedir = dirname(dirname(abspath(__file__)))
 labels_filename = os.path.join(basedir, 'datasets')

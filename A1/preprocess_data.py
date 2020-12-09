@@ -7,7 +7,6 @@ import pandas as pd
 from os.path import dirname, abspath, split
 from numpy import savetxt
 
-
 # PATH TO ALL IMAGES
 #global basedir, image_paths, target_size
 basedir = dirname(dirname(abspath(__file__)))

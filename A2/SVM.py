@@ -21,7 +21,6 @@ def get_data(crop):
     return tr_X, tr_Y, va_X, va_Y, te_X, te_Y
 
 
-
 def get_data_import(X, y):
 
     Y = np.array([y, -(y - 1)]).T

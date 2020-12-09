@@ -1,5 +1,4 @@
-import landmark_predictor as lp
-import numpy as np
+from A1 import preprocess_data as lp
 from sklearn.metrics import classification_report, accuracy_score
 from sklearn import svm
 from keras.utils import np_utils

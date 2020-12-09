@@ -110,6 +110,7 @@ def crop_mouth(image, extract_features, crop):  # Get facial feature and then cr
         """
     return dlibout, resized_image
 
+
 def process_image(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # Convert all colours of the image to grayscale
     gray = gray.astype('uint8')
@@ -166,11 +167,3 @@ def preprocess(extract_feature, crop):   # Grayscale and Resize all images
     smile_labels = (np.array(all_labels) + 1)/2  # simply converts the -1 into 0, so male=0 and female=1
     return faces, smile_labels
 
-    """
-    This funtion extracts the landmarks features for all images in the folder 'dataset/celeba'.
-    It also extracts the gender label for each image.
-    :return:
-        landmark_features:  an array containing 68 landmark points for each image in which a face was detected
-        gender_labels:      an array containing the gender label (male=0 and female=1) for each image in
-                            which a face was detected
-    """

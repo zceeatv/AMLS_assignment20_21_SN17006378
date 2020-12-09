@@ -36,7 +36,7 @@ def img_SVM(training_images, training_labels, test_images, test_labels):
     return pred
 
 
-training_size = 4000
+training_size = 3000
 
 """
 For import preprocessed

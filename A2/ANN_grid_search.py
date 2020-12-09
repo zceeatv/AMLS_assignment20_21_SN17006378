@@ -2,7 +2,7 @@ from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import Dense, Dropout, Flatten, BatchNormalization, Activation, MaxPooling2D, Conv2D
 from keras.constraints import maxnorm
 from keras.utils import np_utils
-import landmark_predictor as lp
+from A2 import preprocess_data as lp
 from tensorflow.keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
 from tensorflow.keras import optimizers

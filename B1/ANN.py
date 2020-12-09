@@ -3,7 +3,7 @@ from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import Dense, Dropout, Flatten, BatchNormalization, Activation, MaxPooling2D, Conv2D
 from keras.constraints import maxnorm
 from keras.utils import np_utils
-from B1 import landmark_predictor as lp
+from B1 import preprocess_data as lp
 from tensorflow.keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
 
@@ -61,7 +61,6 @@ def execute(testing):
     te_X = te_X / 255.0
     va_X = va_X / 255.0
 
-
     # reshape to include 1 for grayscale colours
     tr_X = tr_X.reshape(tr_X.shape[0], tr_X.shape[1], tr_X.shape[2], 1)
     va_X = va_X.reshape(va_X.shape[0], va_X.shape[1], va_X.shape[2], 1)
@@ -118,8 +117,8 @@ def execute(testing):
         #es_callback = EarlyStopping(monitor='val_loss', patience=3)
         # , callbacks=[es_callback]
         history = model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
-        model.save("B1_NN_Model")
-        print("Saved Neural Network Model")
+        #model.save("B1_NN_Model")
+        #print("Saved Neural Network Model")
         plt.plot(history.history['loss'],marker='x')
         plt.plot(history.history['val_loss'], marker='x')
         plt.title('Learning Rate Curve for CNN')

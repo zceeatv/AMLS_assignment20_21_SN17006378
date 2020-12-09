@@ -3,7 +3,7 @@ from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import Dense, Dropout, Flatten, BatchNormalization, Activation, MaxPooling2D, Conv2D
 from keras.constraints import maxnorm
 from keras.utils import np_utils
-from B2 import landmark_predictor as lp
+from B2 import preprocess_data as lp
 from tensorflow.keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
 
@@ -42,6 +42,7 @@ def get_data_import(X,Y):
 
     return tr_X, tr_Y, va_X, va_Y, te_X, te_Y
 
+
 def get_data_preprocess(crop, testing):
     X, Y = lp.preprocess(crop, testing)
     dataset_size = X.shape[0]
@@ -58,14 +59,13 @@ def get_data_preprocess(crop, testing):
 
 
 def execute(testing):
-    crop = True
+    crop = False
     """
     # loading in the data
     X = np.loadtxt('features.txt')
     X = X.reshape(X.shape[0], 30, 50, 3)
     y = np.loadtxt('labels.txt')
     tr_X, tr_Y, va_X, va_Y, te_X, te_Y = get_data_import(X,y)
-
     """
     tr_X, tr_Y, va_X, va_Y, te_X, te_Y = get_data_preprocess(crop, testing)
     # normalize the inputs from 0-255 to between 0 and 1 by dividing by 255
@@ -101,7 +101,6 @@ def execute(testing):
         model.add(Dropout(0.2))
         model.add(BatchNormalization())
 
-
         model.add(Flatten())
         model.add(Dropout(0.2))
 
@@ -133,8 +132,8 @@ def execute(testing):
         es_callback = EarlyStopping(monitor='val_loss', patience=3)
 
         history = model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
-        model.save("B2_NN_Model")
-        print("Saved Neural Network Model")
+        #model.save("B2_NN_Model")
+        #print("Saved Neural Network Model")
         plt.plot(history.history['loss'],marker='x')
         plt.plot(history.history['val_loss'], marker='x')
         plt.title('Learning Rate Curve for CNN')

@@ -29,10 +29,10 @@ def get_data(extract_features):
 
 def execute(testing):
     # Global variables
-    extract_features = True
+    #extract_features = False
 
     # loading in the data
-    tr_X, tr_Y, va_X, va_Y, te_X, te_Y = get_data(extract_features)
+    tr_X, tr_Y, va_X, va_Y, te_X, te_Y = get_data(False)
 
     # normalize the inputs from 0-255 to between 0 and 1 by dividing by 255
     tr_X = tr_X.astype('float32')

@@ -4,12 +4,13 @@
 - A1, A2, B1 and B2 folders contain the machine learning code files for each task
 - Import your cartoon_set, celeba, cartoon_set_test, celeba_set folders into 'Datasets'
 - main.py runs the different machine learning approaches found in the task folders and outputs a table of accuracy score results for each
+
 #### main.py
 - Script that will run all the machine learning models for each task
 - The user can choose to either load up pretrained neural networks and make predictions on a test set or can train the neural network
 from scratch. Make changes to testing variable where necassary:
     ```python
-      testing = False #for training or True for testing
+      testing = False # For training or True for testing
     ```
 - If user chose to test, the script will print out accuracy scores from predictions on the test data
 - if user chose to train, the script will print out accuracy scores from predications on the validation data from the final epoch
@@ -32,8 +33,8 @@ as well as the accuracy scores from predications on the testing data
 - Requires changing passing variables into create_model for each optimisation option
 ##### SVM.py
 - Contains the SVM algorithm training model and the training process
-- Running execute() will load in datasets, preprocess the data and then either trains the 
-    neural network model
+- Running execute() will load in datasets, preprocess the data and then trains the 
+    SVM model, before calculating the accuracy scores from predictions on the test data
 - During preprocessing, a facial detection process is carried out based on 68 facial landmarks, returning 68
 co-ordinates for each face
 ##### preprocess_data.py
@@ -62,7 +63,7 @@ co-ordinates for each face
     neural network model or loads the pretrained model and performs an accuracy score calculation based 
     on the testing data. 
     ```python
-      execute(False) #for training or True for testing
+      execute(False) # For training or True for testing
     ```
 - User can determine which of the following two preprocessing configurations they would like to carry out on the dataset.
     Make changes in execute() where necessary:
@@ -71,7 +72,7 @@ co-ordinates for each face
       crop_mouth = False # Grayscale images and resize to 45 x 55 pixels
       crop_mouth = True # Crop image to mouth section, convert to grayscale and resize to 30 x 60 pixels
   ```
-- Cropping the images to just the mouth provided better performance 
+- Cropping the images to just the mouth provides better performance 
 ##### ANN_grid_search.py
 - Standalone program used to carry out grid search to optimise the hyperparameters of the Neural Network
 - Hyperparameters include epoch and batch size, training optimisation algorithm, network weight initialisation
@@ -79,15 +80,15 @@ co-ordinates for each face
 - Requires changing passing variables into create_model for each optimisation option
 ##### SVM.py
 - Contains the SVM algorithm training model and the training process
-- Running execute() will load in datasets, preprocess the data and then either trains the 
-    neural network model
+- Running execute() will load in datasets, preprocess the data and then trains the 
+    SVM model, before calculating the accuracy scores from predictions on the test data
 - User can determine which of the following two preprocessing configurations they would like to carry out on the dataset.
      ```python
           # Setting configurations:
           crop_mouth = False # Facial landmark detection returning all 68 points
           crop_mouth = True # Facial landmark detection returning 19 points only for the mouth area
     ```
-- Cropping the facial landmark positions to only those of the mouth provides better performance
+- Cropping the facial landmark positions to only those of the mouth provided better performance
 ##### preprocess_data.py
 - Helper library used by all model scripts, used to preprocess data
 - Opens faces and labels from selected datasets, change path names where necessary
@@ -103,7 +104,7 @@ co-ordinates for each face
       images_dir = os.path.join(images_dir, 'img')
     ```
 - extract_feature from preprocess() determines whether, facial detection will be carried out 
-    on the principle of the 68 facial landmark detection and returns 68 co-ordinate positions for each face
+    on the principle of the 68 facial landmarks and returns 68 co-ordinate positions for each face
     or will simply convert the images to grayscale and resize them to 45 x 55 pixels
 - crop_mouth from preprocess() determines whether the mouth area of the face will be extracted. In the case where 
 feature extraction took place, the co-ordinates of the 19 points of the mouth are taken. If there was no feature
@@ -116,7 +117,7 @@ extraction, the image of the mouth is extracted.
     neural network model or loads the pretrained model and performs an accuracy score calculation based 
     on the testing data. 
     ```python
-         execute(False) #for training or True for testing
+         execute(False) # For training or True for testing
     ```
 ##### ANN_grid_search.py
 - Standalone program used to carry out grid search to optimise the hyperparameters of the Neural Network
@@ -145,7 +146,7 @@ extraction, the image of the mouth is extracted.
     neural network model or loads the pretrained model and performs an accuracy score calculation based 
     on the testing data. 
     ```python
-      execute(False) #for training or True for testing
+      execute(False) # For training or True for testing
     ```
 - User can determine which of the following two preprocessing configurations they would like to carry out on the dataset.
     Make changes in execute() where necessary:
@@ -180,6 +181,12 @@ extraction, the image of the mouth is extracted.
 the returned dataset
 - If the preprocessing is ran for testing (testing=True) then these are not omitted
 
+#### System used for training Models
+Computational times provided in this READ.me are based off the following system configurations:
+ - Intel Core i7-8750H	2.2-4.1GHz	6/12 cores	9 MB cache
+ - Nvidia Quadro P1000	640 CUDA 1.49-1.52GHz	4 GB GDDR5
+ - Setup of CUDA toolkit allowing Quadro P1000 for use in training tenserflow models
+ 
 ### Packages requirements:
 - Numpy 1.19.2
 - Opencv 3.4.2
@@ -188,7 +195,7 @@ the returned dataset
 - Keras 2.3.1
 - Scikit-learn 0.23.2
 - Dlib 19.21.0
-
+ 
 #### Installing Packages
 
 - Create Anaconda environment running python 3.7.9

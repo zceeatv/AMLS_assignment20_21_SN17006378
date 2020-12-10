@@ -48,7 +48,6 @@ def get_data_import(X, Y):
 def execute(testing):
 
     # Global variables
-    extract_features = False
     crop_mouth = True
 
     """
@@ -59,7 +58,7 @@ def execute(testing):
     tr_X, tr_Y, te_X, te_Y= get_data_import(X,y)
     """
     # loading in the data
-    tr_X, tr_Y, va_X, va_Y, te_X, te_Y = get_data(extract_features, crop_mouth)
+    tr_X, tr_Y, va_X, va_Y, te_X, te_Y = get_data(False, crop_mouth)
 
     # normalize the inputs from 0-255 to between 0 and 1 by dividing by 255
     tr_X = tr_X.astype('float32')

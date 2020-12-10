@@ -133,7 +133,6 @@ def crop_eye(image, testing):
     dlibout = np.reshape(np.transpose(face_shapes[:, np.argmax(face_areas)]), [68, 2])
     if dlibout is not None:
         eyes = dlibout[36:41]
-        # print(np.amin(mouth, axis=0)[0])
         corners = np.array([[np.amin(eyes, axis=0)[0], np.amin(eyes, axis=0)[1]], [np.amax(eyes, axis=0)[0], np.amax(eyes, axis=0)[1]]])
         eyes = resized_image[corners[0][1]-5:corners[1][1]+5, corners[0][0]-5:corners[1][0]]
         eyes = cv2.resize(eyes, (50, 30), interpolation=cv2.INTER_AREA)

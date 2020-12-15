@@ -57,9 +57,9 @@ def execute():
     pred = classifier.predict(tr_X.reshape((tr_X.shape[0], 68 * 2)))
     train_acc = accuracy_score(list(zip(*tr_Y))[0], pred)
     print("Training Accuracy:", train_acc)
-    pred = classifier.predict(va_X.reshape((len(va_Y), 68*2)))
+    pred = classifier.predict(te_X.reshape((len(te_Y), 68*2)))
     test_acc = accuracy_score(list(zip(*te_Y))[0], pred)
     print("Testing Accuracy:", test_acc)
 
-    return train_acc, test_acc
+    return train_acc*100, test_acc*100
 

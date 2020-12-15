@@ -48,4 +48,4 @@ def execute():
     test_acc = accuracy_score(list(zip(*te_Y))[0], pred)
     print("Testing Accuracy:", test_acc)
 
-    return train_acc, test_acc
+    return train_acc*100, test_acc*100

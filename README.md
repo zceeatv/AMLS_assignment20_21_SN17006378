@@ -13,14 +13,15 @@ from scratch. Make changes to testing variable where necassary:
       testing = False # For training or True for testing
     ```
 - If user chose to test, the script will print out accuracy scores from predictions on the test data
-- if user chose to train, the script will print out accuracy scores from predications on the validation data from the final epoch
+- if user chose to train, the script will print out accuracy scores from predications on the training data from the final epoch
 as well as the accuracy scores from predications on the testing data
 - Preprocessing for A1 takes around 1 minutes for 5000 samples
 - Preprocessing for A2 takes around 3 minutes for 5000 samples
 - Preprocessing for B1 takes around 2 minutes for 10000 samples
 - Preprocessing for B2 takes around 30 minutes for 10000 samples
-- Running main.py with testing = True will take roughly 40 minutes
-- The output log of running main.py can be found in the Appendix of the report under 8.3 Running main.py
+- Running main.py with testing = True will take roughly 40 minutes, and will run the 4 best performing models (A1:NN, A2:SVM, B1:NN, B2:NN)
+- Running main.py with testing = False will take roughly an hour and will run all models that were created (A1:NN, SVM; A2:NN, SVM; B1:NN, SVM; B2:NN)
+- The output logs of running main.py can be found in the Appendix of the report under 8.3 Running main.py, should it take to long for you to run
 
 #### A1
 ##### ANN.py

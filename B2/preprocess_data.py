@@ -207,11 +207,12 @@ def preprocess(crop, testing):
     faces = np.array(all_features)
     eye_colours = np.array(all_labels)
 
-    """For Saving to text files
-    arr_reshaped = landmark_features.reshape(landmark_features.shape[0], -1)
+    #For Saving to text files
+    arr_reshaped = faces.reshape(faces.shape[0], -1)
     np.savetxt("features.txt", arr_reshaped)
     np.savetxt("labels.txt", eye_colours)
-    """
+
 
     return faces, eye_colours
+
 

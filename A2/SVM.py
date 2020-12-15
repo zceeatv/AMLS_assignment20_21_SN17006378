@@ -63,13 +63,20 @@ def execute():
 
     if not crop:
         classifier.fit(tr_X.reshape((tr_X.shape[0], 68*2)), list(zip(*tr_Y))[0])
+        pred = classifier.predict(tr_X.reshape((tr_X.shape[0], 68*2)))
+        train_acc = accuracy_score(list(zip(*tr_Y))[0], pred)
+        print("Training Accuracy:", train_acc)
         pred = classifier.predict(va_X.reshape((len(va_Y), 68*2)))
-        print("Accuracy:", accuracy_score(list(zip(*va_Y))[0], pred))
+        test_acc = accuracy_score(list(zip(*te_Y))[0], pred)
+        print("Testing Accuracy:", test_acc)
 
-        #pred=img_SVM(tr_X.reshape((training_size, 68*2)), list(zip(*tr_Y))[0], te_X.reshape((len(te_Y), 68*2)), list(zip(*te_Y))[0])
     else:
         classifier.fit(tr_X.reshape((tr_X.shape[0], 19*2)), list(zip(*tr_Y))[0])
+        pred = classifier.predict(tr_X.reshape((tr_X.shape[0], 19*2)))
+        train_acc = accuracy_score(list(zip(*tr_Y))[0], pred)
+        print("Training Accuracy:", train_acc)
         pred = classifier.predict(te_X.reshape((len(te_Y), 19*2)))
-        print("Accuracy:", accuracy_score(list(zip(*te_Y))[0], pred))
-        #pred=img_SVM(tr_X.reshape((training_size, 19*2)), list(zip(*tr_Y))[0], te_X.reshape((len(te_Y), 19*2)), list(zip(*te_Y))[0])
+        test_acc = accuracy_score(list(zip(*te_Y))[0], pred)
+        print("Testing Accuracy:", test_acc)
 
+    return train_acc, test_acc

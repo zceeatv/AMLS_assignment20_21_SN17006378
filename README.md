@@ -15,6 +15,13 @@ from scratch. Make changes to testing variable where necassary:
 - If user chose to test, the script will print out accuracy scores from predictions on the test data
 - if user chose to train, the script will print out accuracy scores from predications on the validation data from the final epoch
 as well as the accuracy scores from predications on the testing data
+- Preprocessing for A1 takes around 1 minutes for 5000 samples
+- Preprocessing for A2 takes around 3 minutes for 5000 samples
+- Preprocessing for B1 takes around 2 minutes for 10000 samples
+- Preprocessing for B2 takes around 30 minutes for 10000 samples
+- Running main.py with testing = True will take roughly 40 minutes
+- The output log of running main.py can be found in the Appendix of the report under 8.3 Running main.py
+
 #### A1
 ##### ANN.py
 - Contains the finalised convolutional neural network architecture and training process
@@ -124,6 +131,12 @@ extraction, the image of the mouth is extracted.
 - Hyperparameters include epoch and batch size, training optimisation algorithm, network weight initialisation
     neuron activation function, dropout regularisation, number of neurons in hidden layer
 - Requires changing passing variables into create_model for each optimisation option
+##### SVM.py
+- Contains the SVM algorithm training model and the training process
+- Running execute() will load in datasets, preprocess the data and then trains the 
+    SVM model, before calculating the accuracy scores from predictions on the test data
+- During preprocessing, a facial detection process is carried out based on 68 facial landmarks, returning 68
+co-ordinates for each face
 ##### preprocess_data.py
 - Helper library used by all model scripts, used to preprocess data
 - Opens faces and labels from selected datasets, change path names where necessary
@@ -138,7 +151,9 @@ extraction, the image of the mouth is extracted.
       images_dir = os.path.join(images_dir, 'cartoon_set') # Change to 'cartoon_set_test' if desired
       images_dir = os.path.join(images_dir, 'img')
     ```
-- Will simply convert the images to grayscale and resize them to 50 x 50 pixels along with the corresponding labels
+- extract_feature from preprocess() determines whether, facial detection will be carried out 
+    on the principle of the 68 facial landmark detection and returns 68 co-ordinate positions for each face
+    or will simply convert the images to grayscale and resize them to 50 x 50 pixels
 #### B2
 ##### ANN.py
 - Contains the finalised convolutional neural network architecture and training process

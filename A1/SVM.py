@@ -24,31 +24,28 @@ def get_data_import(X, Y):
     return tr_X, tr_Y, te_X, te_Y
 
 
-# sklearn functions implementation
-def img_SVM(training_images, training_labels, test_images, test_labels):
-    classifier = svm.SVC(kernel='linear')
-    classifier.fit(training_images, training_labels)
-    pred = classifier.predict(test_images)
-    print("Accuracy:", accuracy_score(test_labels, pred))
-
-    print(pred)
-    return pred
-
-
 training_size = 3000
+def execute():
+    """
+    For import preprocessed
 
-"""
-For import preprocessed
+    X = np.loadtxt('features.txt')
+    X = X.reshape(X.shape[0], X.shape[1] // 2, 2)
+    y = np.loadtxt('labels.txt')
+    tr_X, tr_Y, te_X, te_Y= get_data_import(X,y)
+    """
 
-X = np.loadtxt('features.txt')
-X = X.reshape(X.shape[0], X.shape[1] // 2, 2)
-y = np.loadtxt('labels.txt')
-tr_X, tr_Y, te_X, te_Y= get_data_import(X,y)
-"""
+    # Manual preprocess
+    tr_X, tr_Y, te_X, te_Y= get_data()
+    tr_Y = np_utils.to_categorical(tr_Y)
+    te_Y = np_utils.to_categorical(te_Y)
+    classifier = svm.SVC(kernel='linear')
+    classifier.fit(tr_X.reshape((tr_X.shape[0], 68 * 2)), list(zip(*tr_Y))[0])
+    pred = classifier.predict(tr_X.reshape((tr_X.shape[0], 68*2)))
+    train_acc = accuracy_score(list(zip(*tr_Y))[0], pred)
+    print("Training Accuracy:", train_acc)
+    pred = classifier.predict(te_X.reshape((len(te_Y), 68*2)))
+    test_acc = accuracy_score(list(zip(*te_Y))[0], pred)
+    print("Testing Accuracy:", test_acc)
 
-# Manual preprocess
-tr_X, tr_Y, te_X, te_Y= get_data()
-tr_Y = np_utils.to_categorical(tr_Y)
-te_Y = np_utils.to_categorical(te_Y)
-
-pred=img_SVM(tr_X.reshape((training_size, 68*2)), tr_Y[:, 0], te_X.reshape((len(te_Y), 68*2)), te_Y[:, 0])
+    return train_acc, test_acc

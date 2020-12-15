@@ -96,7 +96,7 @@ def get_features(image):
     return dlibout, resized_image
 
 
-def preprocess():
+def preprocess(extract_feature):
     """
     This function loads all the images in the folder 'dataset/cartoon_set'. Converts them to grayscale
     and resizes the images to smaller sizes for faster processing of the neural network
@@ -124,23 +124,29 @@ def preprocess():
                 image.load_img(img_path,
                                target_size=target_size,
                                interpolation='bicubic'))
-            resized_image = img.astype('uint8')
+            if extract_feature:
+                features, _ = get_features(img)   # Get features
+            else:
+                features = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                features = features.astype('uint8')
+                features = cv2.resize(features, (50, 50), interpolation=cv2.INTER_AREA)
+            if features is not None:
+                count += 1
+                all_features.append(features)
+                all_labels.append(face_shapes[file_name])
+                if(count == 10000):
+                    break
+            else:
+                error.append(file_name) # If the dlib facial predictor could not detect facial features, add to error list for future reference
 
-            gray = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)
-            gray = gray.astype('uint8')
-            gray = cv2.resize(gray, (50, 50), interpolation=cv2.INTER_AREA)
-            all_features.append(gray)
-            all_labels.append(face_shapes[file_name])
-            if(count == 10000):
-                break
     print("Finished preprocessing faces")
     faces = np.array(all_features)
     face_shapes = np.array(all_labels)
 
-    """For Saving to text files
-    arr_reshaped = landmark_features.reshape(landmark_features.shape[0], -1)
+    #For Saving to text files
+    arr_reshaped = faces.reshape(faces.shape[0], -1)
     np.savetxt("features.txt", arr_reshaped)
-    np.savetxt("labels.txt", eye_colours)
-    """
+    np.savetxt("labels.txt", face_shapes)
+
 
     return faces, face_shapes

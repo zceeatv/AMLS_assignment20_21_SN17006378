@@ -7,13 +7,17 @@ from A2 import preprocess_data as lp
 from tensorflow.keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
 from numpy import where, loadtxt
+import os
+from os.path import dirname, abspath, split
 
+basedir = dirname(dirname(abspath(__file__)))
+saved_model = os.path.join(basedir, 'A2')
+saved_model = os.path.join(saved_model, 'A2_NN_Model')
 
 """
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 """
-
 
 
 def get_data(extract_features, crop_mouth):
@@ -119,7 +123,7 @@ def execute(testing):
         #model.add(Activation('tanh'))
         model.add(Activation('softmax'))
 
-        epochs = 5
+        epochs = 20
         batch_size = 64
         optimizer = optimizers.Adam(learning_rate=0.0001)
         loss_function_used = 'categorical_crossentropy'
@@ -128,26 +132,30 @@ def execute(testing):
 
         es_callback = EarlyStopping(monitor='val_loss', patience=10)
         # , callbacks=[es_callback]
-        history = model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
+        history = model.fit(tr_X, tr_Y, validation_data=(va_X, va_Y), epochs=epochs, batch_size=batch_size)
         #model.save("A2_NN_Model")
         #print("Saved Neural Network Model")
+        """
         plt.plot(history.history['loss'],marker='x')
         plt.plot(history.history['val_loss'], marker='x')
-        plt.title('Learning Rate Curve for CNN')
-        plt.ylabel('Cost')
-        plt.xlabel('Number of Epochs')
+        plt.title("Learning Rate Curve for A2's CNN Model")
+        plt.ylabel('Cost', fontsize='large', fontweight='bold')
+        plt.xlabel('Number of Epochs', fontsize='large', fontweight='bold')
         plt.legend(['train', 'test'], loc='upper left')
         plt.rcParams.update({'font.size': 22})
         plt.show()
+        """
+        # Model evaluation
+        scores = model.evaluate(te_X, te_Y, verbose=0)
+        print("Accuracy: %.2f%%" % (scores[1]*100))
+        return history.history["accuracy"][epochs - 1] * 100, scores[1] * 100
 
     else:
         print("Loaded Neural Network Model")
-        model = load_model("A2_NN_Model")
-        epochs = 10000
-        batch_size = 64
-        model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
-        model.save("A2_NN_Model")
-    # Model evaluation
-    scores = model.evaluate(te_X, te_Y, verbose=0)
-    print("Accuracy: %.2f%%" % (scores[1]*100))
+        model = load_model(saved_model)
+        # Model evaluation
+        scores = model.evaluate(te_X, te_Y, verbose=0)
+        print("Accuracy: %.2f%%" % (scores[1]*100))
+        return scores[1] * 100
+
 

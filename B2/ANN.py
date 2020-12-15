@@ -6,7 +6,13 @@ from keras.utils import np_utils
 from B2 import preprocess_data as lp
 from tensorflow.keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
+from tensorflow.keras import optimizers
+import os
+from os.path import dirname, abspath, split
 
+basedir = dirname(dirname(abspath(__file__)))
+saved_model = os.path.join(basedir, 'B2')
+saved_model = os.path.join(saved_model, 'B2_NN_Model')
 
 """
 import os
@@ -45,8 +51,8 @@ def get_data_import(X,Y):
 def get_data_preprocess(crop, testing):
     X, Y = lp.preprocess(crop, testing)
     dataset_size = X.shape[0]
-    training_size = int(dataset_size * 0.7)
-    validation_size = training_size + int(dataset_size * 0.15)
+    training_size = int(dataset_size * 0.8)
+    validation_size = training_size + int(dataset_size * 0.1)
     tr_X = X[:training_size]
     tr_Y = Y[:training_size]
     va_X = X[training_size:validation_size]
@@ -58,7 +64,7 @@ def get_data_preprocess(crop, testing):
 
 
 def execute(testing):
-    crop = False
+    crop = True
     """
     # loading in the data
     X = np.loadtxt('features.txt')
@@ -91,11 +97,11 @@ def execute(testing):
         model = Sequential()
 
         # Convolutional layers
-        model.add(Conv2D(32, (3, 3), input_shape=input_shape, activation='relu', padding='same'))
+        model.add(Conv2D(100, (3, 3), input_shape=input_shape, activation='relu', padding='same'))
         model.add(Dropout(0.2))
         model.add(BatchNormalization())
 
-        model.add(Conv2D(64, (3, 3), activation='relu', padding='same'))
+        model.add(Conv2D(200, (3, 3), activation='relu', padding='same'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
         model.add(Dropout(0.2))
         model.add(BatchNormalization())
@@ -103,12 +109,12 @@ def execute(testing):
         model.add(Flatten())
         model.add(Dropout(0.2))
 
-        model.add(Dense(256, kernel_constraint=maxnorm(3)))
+        model.add(Dense(512, kernel_constraint=maxnorm(4)))
         model.add(Activation('relu'))
         model.add(Dropout(0.2))
         model.add(BatchNormalization())
 
-        model.add(Dense(128, kernel_constraint=maxnorm(3)))
+        model.add(Dense(256, kernel_constraint=maxnorm(4)))
         model.add(Activation('relu'))
         model.add(Dropout(0.2))
         model.add(BatchNormalization())
@@ -123,29 +129,36 @@ def execute(testing):
         model.add(Dense(class_num))  #Final layer has same number of neurons as classes
         model.add(Activation('softmax'))
 
-        epochs = 5
+        epochs = 20
         batch_size = 64
-        optimizer = 'adam'
+        optimizer = optimizers.Adam(learning_rate=0.001)
 
         model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
         es_callback = EarlyStopping(monitor='val_loss', patience=3)
 
-        history = model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
+        history = model.fit(tr_X, tr_Y, validation_data=(va_X, va_Y), epochs=epochs, batch_size=batch_size)
         #model.save("B2_NN_Model")
         #print("Saved Neural Network Model")
+        """
         plt.plot(history.history['loss'],marker='x')
         plt.plot(history.history['val_loss'], marker='x')
-        plt.title('Learning Rate Curve for CNN')
-        plt.ylabel('Cost')
-        plt.xlabel('Number of Epochs')
+        plt.title("Learning Rate Curve for B2's CNN Model")
+        plt.ylabel('Cost', fontsize='large', fontweight='bold')
+        plt.xlabel('Number of Epochs', fontsize='large', fontweight='bold')
         plt.legend(['train', 'test'], loc='upper left')
-        plt.rcParams.update({'font.size': 22})
+        plt.rcParams.update({'font.size': 18})
         plt.show()
+        """
+        # Model evaluation
+        scores = model.evaluate(te_X, te_Y, verbose=0)
+        print("Accuracy: %.2f%%" % (scores[1]*100))
+        return history.history["accuracy"][epochs - 1] * 100, scores[1] * 100
 
     else:
         print("Loaded Neural Network Model")
-        model = load_model("B2_NN_Model")
+        model = load_model(saved_model)
+        # Model evaluation
+        scores = model.evaluate(te_X, te_Y, verbose=0)
+        print("Accuracy: %.2f%%" % (scores[1]*100))
+        return scores[1] * 100
 
-    # Model evaluation
-    scores = model.evaluate(te_X, te_Y, verbose=0)
-    print("Accuracy: %.2f%%" % (scores[1]*100))

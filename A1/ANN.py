@@ -6,6 +6,13 @@ from A1 import preprocess_data as lp
 from tensorflow.keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
 from tensorflow.keras import optimizers
+import os
+from os.path import dirname, abspath, split
+
+basedir = dirname(dirname(abspath(__file__)))
+saved_model = os.path.join(basedir, 'A1')
+saved_model = os.path.join(saved_model, 'A1_NN_Model')
+
 """
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
@@ -85,9 +92,9 @@ def execute(testing):
         model.add(Dense(class_num))  #Final layer has same number of neurons as classes
         model.add(Activation('softmax'))
 
-        epochs = 5
+        epochs = 20
         batch_size = 64
-        optimizer = optimizers.Adam(lr=0.0001)
+        optimizer = optimizers.Nadam(lr=0.0001)
 
         model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
         es_callback = EarlyStopping(monitor='val_loss', patience=10)
@@ -95,21 +102,31 @@ def execute(testing):
         history = model.fit(tr_X, tr_Y, validation_data=(va_X, va_Y), epochs=epochs, batch_size=batch_size)
         #model.save("A1_NN_Model")
         #print("Saved Neural Network Model")
+        """
         plt.plot(history.history['loss'],marker='x')
         plt.plot(history.history['val_loss'], marker='x')
-        plt.title('Learning Rate Curve for CNN')
-        plt.ylabel('Cost')
-        plt.xlabel('Number of Epochs')
+        plt.title("Learning Rate Curve for A1's CNN Model")
+        plt.ylabel('Cost', fontsize='large', fontweight='bold')
+        plt.xlabel('Number of Epochs', fontsize='large', fontweight='bold')
         plt.legend(['train', 'test'], loc='upper left')
-        plt.rcParams.update({'font.size': 22})
+        plt.rcParams.update({'font.size': 18})
         plt.show()
+        """
+        print(history.history["accuracy"][epochs-1])
+
+        # Model evaluation
+        scores = model.evaluate(te_X, te_Y, verbose=0)
+        print("Accuracy: %.2f%%" % (scores[1] * 100))
+
+        return history.history["accuracy"][epochs - 1] * 100, scores[1] * 100
+
     else:
         print("Loaded Neural Network Model")
-        model = load_model("A1_NN_Model")
+        model = load_model(saved_model)
 
-    # Model evaluation
-    scores = model.evaluate(te_X, te_Y, verbose=0)
-    print("Accuracy: %.2f%%" % (scores[1]*100))
+        # Model evaluation
+        scores = model.evaluate(te_X, te_Y, verbose=0)
+        print("Accuracy: %.2f%%" % (scores[1]*100))
+        return scores[1] * 100
 
-execute(False)
 

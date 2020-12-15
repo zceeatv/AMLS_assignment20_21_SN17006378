@@ -5,14 +5,22 @@ from keras.utils import np_utils
 from B1 import preprocess_data as lp
 from tensorflow.keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
+from tensorflow.keras import optimizers
+import numpy as np
+import os
+from os.path import dirname, abspath, split
 
+basedir = dirname(dirname(abspath(__file__)))
+saved_model = os.path.join(basedir, 'B1')
+saved_model = os.path.join(saved_model, 'B1_NN_Model')
 """
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 """
 
 def get_data():
-    X, Y = lp.preprocess()
+    extract_feature=False
+    X, Y = lp.preprocess(extract_feature)
     dataset_size = X.shape[0]
     training_size = int(dataset_size * 0.7)
     validation_size = training_size + int(dataset_size * 0.15)
@@ -28,8 +36,8 @@ def get_data():
 
 def get_data_import(X,Y):
     dataset_size = X.shape[0]
-    training_size = int(dataset_size * 0.7)
-    validation_size = training_size + int(dataset_size * 0.15)
+    training_size = int(dataset_size * 0.8)
+    validation_size = training_size + int(dataset_size * 0.1)
     tr_X = X[:training_size]
     tr_Y = Y[:training_size]
     va_X = X[training_size:validation_size]
@@ -46,7 +54,7 @@ def execute(testing):
     X = np.loadtxt('features.txt')
     X = X.reshape(X.shape[0], X.shape[1] // 2, 2)
     y = np.loadtxt('labels.txt')
-    tr_X, tr_Y, te_X, te_Y= get_data_import(X,y)
+    tr_X, tr_Y, va_X, va_Y, te_X, te_Y= get_data_import(X,y)
     """
 
     # loading in the data
@@ -76,11 +84,11 @@ def execute(testing):
         model = Sequential()
 
         # Convolutional layers
-        model.add(Conv2D(32, (3, 3), input_shape=input_shape, activation='linear', padding='same'))
+        model.add(Conv2D(100, (3, 3), input_shape=input_shape, activation='relu', padding='same'))
         model.add(Dropout(0.2))
         model.add(BatchNormalization())
 
-        model.add(Conv2D(64, (3, 3), activation='linear', padding='same'))
+        model.add(Conv2D(200, (3, 3), activation='relu', padding='same'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
         model.add(Dropout(0.2))
         model.add(BatchNormalization())
@@ -89,12 +97,12 @@ def execute(testing):
         model.add(Dropout(0.2))
 
         model.add(Dense(512, kernel_constraint=maxnorm(4)))
-        model.add(Activation('linear'))
+        model.add(Activation('relu'))
         model.add(Dropout(0.2))
         model.add(BatchNormalization())
 
         model.add(Dense(256, kernel_constraint=maxnorm(4)))
-        model.add(Activation('linear'))
+        model.add(Activation('relu'))
         model.add(Dropout(0.2))
         model.add(BatchNormalization())
 
@@ -108,29 +116,37 @@ def execute(testing):
         model.add(Dense(class_num))   #Final layer has same number of neurons as classes
         model.add(Activation('softmax'))
 
-        epochs = 5
+        epochs = 20
         batch_size = 64
-        optimizer = 'adam'
+        optimizer = optimizers.Adam(learning_rate=0.0001)
 
         model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
         #es_callback = EarlyStopping(monitor='val_loss', patience=3)
         # , callbacks=[es_callback]
-        history = model.fit(tr_X, tr_Y, validation_data=(te_X, te_Y), epochs=epochs, batch_size=batch_size)
+        history = model.fit(tr_X, tr_Y, validation_data=(va_X, va_Y), epochs=epochs, batch_size=batch_size)
         #model.save("B1_NN_Model")
         #print("Saved Neural Network Model")
+        """
         plt.plot(history.history['loss'],marker='x')
         plt.plot(history.history['val_loss'], marker='x')
-        plt.title('Learning Rate Curve for CNN')
-        plt.ylabel('Cost')
-        plt.xlabel('Number of Epochs')
+        plt.title("Learning Rate Curve for B1's CNN Model")
+        plt.ylabel('Cost', fontsize='large', fontweight='bold')
+        plt.xlabel('Number of Epochs', fontsize='large', fontweight='bold')
         plt.legend(['train', 'test'], loc='upper left')
         plt.rcParams.update({'font.size': 22})
         plt.show()
+        """
+        # Model evaluation
+        scores = model.evaluate(te_X, te_Y, verbose=0)
+        print("Accuracy: %.2f%%" % (scores[1]*100))
+        return history.history["accuracy"][epochs - 1] * 100, scores[1] * 100
+
     else:
         print("Loaded Neural Network Model")
-        model = load_model("B1_NN_Model")
+        model = load_model(saved_model)
+        # Model evaluation
+        scores = model.evaluate(te_X, te_Y, verbose=0)
+        print("Accuracy: %.2f%%" % (scores[1]*100))
+        return scores[1] * 100
 
-    # Model evaluation
-    scores = model.evaluate(te_X, te_Y, verbose=0)
-    print("Accuracy: %.2f%%" % (scores[1]*100))
 

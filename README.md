@@ -10,6 +10,7 @@
 
 #### main.py
 - Script that will run all the machine learning models for each task
+- testing variable is set to True by default
 - The user can choose to either load up pretrained neural networks and make predictions on a test set or can train the neural network
 from scratch. Make changes to testing variable where necassary:
     ```python

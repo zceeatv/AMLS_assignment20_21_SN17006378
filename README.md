@@ -4,6 +4,9 @@
 - A1, A2, B1 and B2 folders contain the machine learning code files for each task
 - Import your cartoon_set, celeba, cartoon_set_test, celeba_set folders into 'Datasets'
 - main.py runs the different machine learning approaches found in the task folders and outputs a table of accuracy score results for each
+- Pretrained neural network models can be downloaded from the following link: https://drive.google.com/drive/folders/1ffr5I5fqglfGQqmoJEVSqnnTzqUWkQoL?usp=sharing
+- Once these are downloaded, copy and paste them into their respective folders. Eg. A1_NN_Model will be copied into the A1 folder and A2_NN_Model goes into the A2 folder etc.
+- Make sure the names of the folders are the same.
 
 #### main.py
 - Script that will run all the machine learning models for each task
